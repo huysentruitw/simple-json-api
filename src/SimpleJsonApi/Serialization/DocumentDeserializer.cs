@@ -2,43 +2,33 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-using Humanizer;
-using SimpleJsonApi.Attributes;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Models;
 
-namespace SimpleJsonApi.Converters
+namespace SimpleJsonApi.Serialization
 {
-    internal sealed class DocumentConverter
+    internal sealed class DocumentDeserializer : IDocumentDeserializer
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
-        private readonly Document _document;
-        private readonly JsonApiConfiguration _configuration;
 
-        public DocumentConverter(Document document, JsonApiConfiguration configuration)
+        public object Deserialize(Document document, Type type, JsonApiConfiguration configuration)
         {
             if (document == null) throw new ArgumentNullException(nameof(document));
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            _document = document;
-            _configuration = configuration;
-        }
-
-        public object ConvertTo(Type type)
-        {
             if (type == null) throw new ArgumentNullException(nameof(type));
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             var isGenericChangesObject = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Changes<>);
             if (isGenericChangesObject) type = type.GenericTypeArguments.First();
 
-            ValidateResourceType(type);
-            var mapping = _configuration.ResourceConfiguration.GetMappingForType(type);
+            ValidateResourceType(document, type, configuration);
+            var mapping = configuration.ResourceConfiguration.GetMappingForType(type);
             if (mapping == null) throw new JsonApiException($"No mapping found for resource type {type.Name}");
 
-            var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentConverter).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
+            var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentDeserializer).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
             if (builder == null) throw new JsonApiException($"Failed to create builder method for type {type.Name}");
 
-            var changes = builder.Invoke(this, new object[] { mapping }) as IChanges;
+            var changes = builder.Invoke(this, new object[] { document, mapping, configuration }) as IChanges;
             if (changes == null) throw new JsonApiException($"Builder method did not generate a class that inherits from {nameof(IChanges)}");
 
             if (isGenericChangesObject) return changes;
@@ -48,19 +38,19 @@ namespace SimpleJsonApi.Converters
             return result;
         }
 
-        public Changes<TResource> BuildChanges<TResource>(IResourceMapping mapping)
+        public Changes<TResource> BuildChanges<TResource>(Document document, IResourceMapping mapping, JsonApiConfiguration configuration)
         {
             var changes = new Changes<TResource>();
 
-            if (_document.Data.Id.HasValue)
+            if (document.Data.Id.HasValue)
             {
-                var id = _document.Data.Id.Value;
+                var id = document.Data.Id.Value;
                 changes.AddChange(resource => mapping.SetId(resource, id));
             }
 
-            if (_document.Data.Attributes != null)
+            if (document.Data.Attributes != null)
             {
-                foreach (var attribute in _document.Data.Attributes)
+                foreach (var attribute in document.Data.Attributes)
                 {
                     var propertyType = mapping.GetPropertyType(attribute.Key);
                     if (propertyType == null) continue;
@@ -68,13 +58,13 @@ namespace SimpleJsonApi.Converters
                 }
             }
 
-            if (_document.Data.Relationships?.Items != null)
+            if (document.Data.Relationships?.Items != null)
             {
-                foreach (var relation in _document.Data.Relationships.Items)
+                foreach (var relation in document.Data.Relationships.Items)
                 {
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
                     if (relationResourceType == null) throw new JsonApiException($"No relation defined for {relation.Key}");
-                    var relationResourceTypeName = GetResourceTypeName(relationResourceType);
+                    var relationResourceTypeName = configuration.BuildResourceTypeName(relationResourceType);
                     if (mapping.HasManyRelation(relation.Key))
                     {
                         var relationData = relation.Value.ToObject<ManyRelation>()?.Data;
@@ -103,18 +93,11 @@ namespace SimpleJsonApi.Converters
             return changes;
         }
 
-        private void ValidateResourceType(Type type)
+        private void ValidateResourceType(Document document, Type type, JsonApiConfiguration configuration)
         {
-            var destinationResourceType = GetResourceTypeName(type);
-            if (!_document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
-                throw new JsonApiException($"Can't convert resource type {_document.Data.Type} to {destinationResourceType}");
-        }
-
-        private string GetResourceTypeName(Type resourceType)
-        {
-            var nameAttribute = resourceType.GetCustomAttribute<JsonApiResourceNameAttribute>();
-            var singularName = (nameAttribute?.Name ?? resourceType.Name).ToLower();
-            return _configuration.PluralizeResourceTypeNames ? singularName.Pluralize() : singularName;
+            var destinationResourceType = configuration.BuildResourceTypeName(type);
+            if (!document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
+                throw new JsonApiException($"Can't convert resource type {document.Data.Type} to {destinationResourceType}");
         }
     }
 }

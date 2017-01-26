@@ -65,10 +65,10 @@
     <Compile Include="Configuration\ResourceMapping.cs" />
     <Compile Include="Configuration\ResourceMappingBuilder.cs" />
     <Compile Include="Configuration\ResourceConfigurationBuilder.cs" />
-    <Compile Include="Converters\DocumentConverter.cs" />
+    <Compile Include="Serialization\DocumentDeserializer.cs" />
+    <Compile Include="Serialization\IDocumentDeserializer.cs" />
     <Compile Include="Exceptions\JsonApiException.cs" />
     <Compile Include="Exceptions\JsonApiFormatException.cs" />
-    <Compile Include="Extensions\DocumentExtensions.cs" />
     <Compile Include="Extensions\ExpressionExtensions.cs" />
     <Compile Include="Extensions\HttpConfigurationExtensions.cs" />
     <Compile Include="Formatters\JsonApiMediaTypeFormatter.cs" />

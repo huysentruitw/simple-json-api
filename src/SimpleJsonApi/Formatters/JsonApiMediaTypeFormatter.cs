@@ -8,8 +8,8 @@ using System.Text;
 using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
-using SimpleJsonApi.Extensions;
 using SimpleJsonApi.Models;
+using SimpleJsonApi.Serialization;
 
 namespace SimpleJsonApi.Formatters
 {
@@ -17,12 +17,16 @@ namespace SimpleJsonApi.Formatters
     {
         public const string JsonApiMediaType = "application/vnd.api+json";
         private readonly JsonApiConfiguration _configuration;
+        private readonly Func<IDocumentDeserializer> _documentDeserializerFactory;
         private readonly JsonSerializer _jsonSerializer;
 
-        public JsonApiMediaTypeFormatter(JsonApiConfiguration configuration)
+        public JsonApiMediaTypeFormatter(JsonApiConfiguration configuration,
+            Func<IDocumentDeserializer> documentDeserializerFactory)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (documentDeserializerFactory == null) throw new ArgumentNullException(nameof(documentDeserializerFactory));
             _configuration = configuration;
+            _documentDeserializerFactory = documentDeserializerFactory;
             _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
 
             SupportedEncodings.Add(new UTF8Encoding(false, true));
@@ -49,7 +53,7 @@ namespace SimpleJsonApi.Formatters
                 var document = _jsonSerializer.Deserialize<Document>(jsonTextReader);
                 if (document?.Data == null) throw new JsonApiFormatException("data is missing");
                 if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException("type is missing");
-                return document.ConvertTo(type, _configuration);
+                return _documentDeserializerFactory().Deserialize(document, type, _configuration);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Formatters;
+using SimpleJsonApi.Serialization;
 
 namespace System.Web.Http
 {
@@ -14,7 +15,7 @@ namespace System.Web.Http
             jsonApiConfiguration.Validate();
 
             // TODO httpConfiguration.MessageHandlers.Add(new JsonApiDelegatingHandler(jsonApiConfiguration));
-            httpConfiguration.Formatters.Add(new JsonApiMediaTypeFormatter(jsonApiConfiguration));
+            httpConfiguration.Formatters.Add(new JsonApiMediaTypeFormatter(jsonApiConfiguration, () => new DocumentDeserializer()));
 
             return httpConfiguration;
         }
