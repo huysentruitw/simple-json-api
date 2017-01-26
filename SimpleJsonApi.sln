@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1E5D55BE-DE67-4899-8C16-EA53D8FAF0BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E3D9082E-FFA8-41A7-994F-FDFC53C37943}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleJsonApi", "src\SimpleJsonApi\SimpleJsonApi.csproj", "{5BCA76BC-E5B5-4B6E-90D4-A9D2A18B163C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleJsonApi.Sample", "src\SimpleJsonApi.Sample\SimpleJsonApi.Sample.csproj", "{34B00002-139E-4D42-B584-F08C17E040A0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3E7B98BB-8BDD-4A25-A4EA-5D38C670C321}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleJsonApi.Tests", "tests\SimpleJsonApi.Tests\SimpleJsonApi.Tests.csproj", "{7E931CFE-D489-40DF-8BE7-6A456E3CF82D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BCA76BC-E5B5-4B6E-90D4-A9D2A18B163C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BCA76BC-E5B5-4B6E-90D4-A9D2A18B163C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BCA76BC-E5B5-4B6E-90D4-A9D2A18B163C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BCA76BC-E5B5-4B6E-90D4-A9D2A18B163C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34B00002-139E-4D42-B584-F08C17E040A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34B00002-139E-4D42-B584-F08C17E040A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34B00002-139E-4D42-B584-F08C17E040A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34B00002-139E-4D42-B584-F08C17E040A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E931CFE-D489-40DF-8BE7-6A456E3CF82D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E931CFE-D489-40DF-8BE7-6A456E3CF82D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E931CFE-D489-40DF-8BE7-6A456E3CF82D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E931CFE-D489-40DF-8BE7-6A456E3CF82D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5BCA76BC-E5B5-4B6E-90D4-A9D2A18B163C} = {1E5D55BE-DE67-4899-8C16-EA53D8FAF0BF}
+		{34B00002-139E-4D42-B584-F08C17E040A0} = {1E5D55BE-DE67-4899-8C16-EA53D8FAF0BF}
+		{7E931CFE-D489-40DF-8BE7-6A456E3CF82D} = {3E7B98BB-8BDD-4A25-A4EA-5D38C670C321}
+	EndGlobalSection
+EndGlobal
