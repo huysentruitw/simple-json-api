@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -30,12 +31,14 @@ namespace SimpleJsonApi.Formatters
 
         public override bool CanReadType(Type type)
         {
-            return true;
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Changes<>))
+                type = type.GetGenericArguments().First();
+            return _configuration.ResourceConfiguration.IsMapped(type);
         }
 
         public override bool CanWriteType(Type type)
         {
-            return true;
+            return _configuration.ResourceConfiguration.IsMapped(type);
         }
 
         public override object ReadFromStream(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)

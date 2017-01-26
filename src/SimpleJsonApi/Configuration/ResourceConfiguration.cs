@@ -18,5 +18,10 @@ namespace SimpleJsonApi.Configuration
             IResourceMapping result;
             return _mappings.TryGetValue(resourceType, out result) ? result : null;
         }
+
+        internal bool IsMapped(Type resourceType)
+        {
+            return _mappings.ContainsKey(resourceType);
+        }
     }
 }
