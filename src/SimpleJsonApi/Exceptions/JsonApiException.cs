@@ -3,14 +3,20 @@ using Newtonsoft.Json;
 
 namespace SimpleJsonApi.Exceptions
 {
-    public class JsonApiException : JsonException
+    internal class JsonApiException : JsonException
     {
-        public JsonApiException(string message)
+        public JsonApiException(CausedBy causedBy, string message)
             : base(message)
-        { }
+        {
+            CausedBy = causedBy;
+        }
 
-        public JsonApiException(string message, Exception innerException)
+        public JsonApiException(CausedBy kind, string message, Exception innerException)
             : base(message, innerException)
-        { }
+        {
+            CausedBy = kind;
+        }
+
+        public CausedBy CausedBy { get; }
     }
 }

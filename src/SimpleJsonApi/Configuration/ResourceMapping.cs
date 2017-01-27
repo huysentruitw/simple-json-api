@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using SimpleJsonApi.Exceptions;
 
 namespace SimpleJsonApi.Configuration
 {
@@ -75,7 +74,10 @@ namespace SimpleJsonApi.Configuration
         private void ValidateInstance(object instance)
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
-            if (instance.GetType() != typeof(TResource)) throw new JsonApiException($"Can't set Id on type {instance.GetType().Name} with mapping for {typeof(TResource).Name}");
+            if (instance.GetType() != typeof(TResource))
+                throw new ArgumentException(
+                    $"Can't set Id on type {instance.GetType().Name} with mapping for {typeof(TResource).Name}",
+                    nameof(instance));
         }
 
         private PropertyInfo GetPropertyInfo(string propertyName)

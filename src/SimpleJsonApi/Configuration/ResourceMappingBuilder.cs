@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Newtonsoft.Json;
-using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Extensions;
 
 namespace SimpleJsonApi.Configuration
@@ -35,7 +34,7 @@ namespace SimpleJsonApi.Configuration
         public ResourceMappingBuilder<TResource> WithProperty(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
-            if (propertyInfo == null) throw new JsonApiException("Failed to get property info from expression");
+            if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
             AddProperty(propertyInfo);
             return this;
         }
@@ -43,7 +42,7 @@ namespace SimpleJsonApi.Configuration
         public ResourceMappingBuilder<TResource> WithoutProperty(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
-            if (propertyInfo == null) throw new JsonApiException("Failed to get property info from expression");
+            if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
             RemoveProperty(propertyInfo.Name);
             return this;
         }
@@ -51,8 +50,8 @@ namespace SimpleJsonApi.Configuration
         public ResourceMappingBuilder<TResource> WithIdProperty(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
-            if (propertyInfo == null) throw new JsonApiException("Failed to get property info from expression");
-            if (propertyInfo.PropertyType != typeof(Guid)) throw new JsonApiException("Id property must be of type Guid");
+            if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
+            if (propertyInfo.PropertyType != typeof(Guid)) throw new ArgumentException("Id property must be of type Guid", nameof(expression));
             AddProperty(propertyInfo);
             _idPropertyName = propertyInfo.Name;
             return this;
@@ -61,7 +60,7 @@ namespace SimpleJsonApi.Configuration
         public ResourceMappingBuilder<TResource> WithOne<TRelatedResourceType>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
-            if (propertyInfo == null) throw new JsonApiException("Failed to get property info from expression");
+            if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
             AddRelation(propertyInfo, typeof(TRelatedResourceType), false);
             return this;
         }
@@ -69,7 +68,7 @@ namespace SimpleJsonApi.Configuration
         public ResourceMappingBuilder<TResource> WithMany<TRelatedResourceType>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
-            if (propertyInfo == null) throw new JsonApiException("Failed to get property info from expression");
+            if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
             AddRelation(propertyInfo, typeof(TRelatedResourceType), true);
             return this;
         }
@@ -91,13 +90,13 @@ namespace SimpleJsonApi.Configuration
 
         private void Validate()
         {
-            if (!HasIdProperty()) throw new JsonApiException($"No Id property of type Guid found for resource {_resourceType.Name}");
-            if (_relations.ContainsKey(_idPropertyName)) throw new JsonApiException($"Id property {_idPropertyName} cannot be marked as a relationship");
+            if (!HasIdProperty()) throw new Exception($"No Id property of type Guid found for resource {_resourceType.Name}");
+            if (_relations.ContainsKey(_idPropertyName)) throw new Exception($"Id property {_idPropertyName} cannot be marked as a relationship");
         }
 
         private void AddProperty(PropertyInfo propertyInfo)
         {
-            if (!propertyInfo.CanRead || !propertyInfo.CanWrite) throw new JsonApiException($"Property {propertyInfo.Name} must have a getter and a setter");
+            if (!propertyInfo.CanRead || !propertyInfo.CanWrite) throw new ArgumentException($"Property {propertyInfo.Name} must have a getter and a setter");
 
             var propertyName = GetPropertyName(propertyInfo);
 
@@ -116,9 +115,9 @@ namespace SimpleJsonApi.Configuration
 
         private void AddRelation(PropertyInfo propertyInfo, Type relatedResourceType, bool hasMany)
         {
-            if (!propertyInfo.CanRead || !propertyInfo.CanWrite) throw new JsonApiException($"Relation property {propertyInfo.Name} must have a getter and a setter");
+            if (!propertyInfo.CanRead || !propertyInfo.CanWrite) throw new ArgumentException($"Relation property {propertyInfo.Name} must have a getter and a setter");
             var propertyName = GetPropertyName(propertyInfo);
-            if (_relations.ContainsKey(propertyName)) throw new JsonApiException($"Relation {propertyName} already defined");
+            if (_relations.ContainsKey(propertyName)) throw new InvalidOperationException($"Relation {propertyName} already defined");
             _relations.Add(propertyName, new RelationInfo(propertyInfo, relatedResourceType, hasMany));
         }
 

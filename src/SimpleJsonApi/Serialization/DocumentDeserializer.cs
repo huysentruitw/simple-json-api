@@ -23,13 +23,13 @@ namespace SimpleJsonApi.Serialization
 
             ValidateResourceType(document, type, configuration);
             var mapping = configuration.ResourceConfiguration.GetMappingForType(type);
-            if (mapping == null) throw new JsonApiException($"No mapping found for resource type {type.Name}");
+            if (mapping == null) throw new JsonApiException(CausedBy.Server, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentDeserializer).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
-            if (builder == null) throw new JsonApiException($"Failed to create builder method for type {type.Name}");
+            if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create builder method for type {type.Name}");
 
             var changes = builder.Invoke(this, new object[] { document, mapping, configuration }) as IChanges;
-            if (changes == null) throw new JsonApiException($"Builder method did not generate a class that inherits from {nameof(IChanges)}");
+            if (changes == null) throw new JsonApiException(CausedBy.Server, $"Builder method did not generate a class that inherits from {nameof(IChanges)}");
 
             if (isGenericChangesObject) return changes;
 
@@ -63,7 +63,7 @@ namespace SimpleJsonApi.Serialization
                 foreach (var relation in document.Data.Relationships.Items)
                 {
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
-                    if (relationResourceType == null) throw new JsonApiException($"No relation defined for {relation.Key}");
+                    if (relationResourceType == null) throw new JsonApiException(CausedBy.Client, $"Unknown relation {relation.Key}");
                     var relationResourceTypeName = configuration.ResourceConfiguration.GetResourceTypeName(relationResourceType);
                     if (mapping.HasManyRelation(relation.Key))
                     {
@@ -71,7 +71,7 @@ namespace SimpleJsonApi.Serialization
                         if (relationData != null)
                         {
                             if (relationData.Any(x => !x.Type.Equals(relationResourceTypeName)))
-                                throw new JsonApiFormatException($"Not all relations specified for {relation.Key} are of the type {relationResourceTypeName}");
+                                throw new JsonApiFormatException(CausedBy.Client, $"Not all relations specified for {relation.Key} are of the type {relationResourceTypeName}");
                             var relationIds = relationData.Select(x => x.Id);
                             changes.AddChange(resource => mapping.SetRelations(resource, relation.Key, relationIds));
                         }
@@ -82,7 +82,7 @@ namespace SimpleJsonApi.Serialization
                         if (relationData != null)
                         {
                             if (!relationData.Type.Equals(relationResourceTypeName))
-                                throw new JsonApiFormatException($"Relation type specified for {relation.Key} must be {relationResourceTypeName} instead of {relationData.Type}");
+                                throw new JsonApiFormatException(CausedBy.Client, $"Relation type specified for {relation.Key} must be {relationResourceTypeName} instead of {relationData.Type}");
                             var relationId = relationData.Id;
                             changes.AddChange(resource => mapping.SetRelation(resource, relation.Key, relationId));
                         }
@@ -97,7 +97,7 @@ namespace SimpleJsonApi.Serialization
         {
             var destinationResourceType = configuration.ResourceConfiguration.GetResourceTypeName(type);
             if (!document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
-                throw new JsonApiException($"Can't convert resource type {document.Data.Type} to {destinationResourceType}");
+                throw new JsonApiException(CausedBy.Client, $"Invalid resource type {document.Data.Type} (should be {destinationResourceType})");
         }
     }
 }

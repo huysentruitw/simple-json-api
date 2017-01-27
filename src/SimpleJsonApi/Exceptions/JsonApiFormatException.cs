@@ -1,16 +1,15 @@
 ﻿using System;
-using Newtonsoft.Json;
 
 namespace SimpleJsonApi.Exceptions
 {
-    public class JsonApiFormatException : JsonException
+    internal sealed class JsonApiFormatException : JsonApiException
     {
-        internal JsonApiFormatException(string message)
-            : base($"Invalid JSON API Format: {message}")
+        internal JsonApiFormatException(CausedBy causedBy, string message)
+            : base(causedBy, $"Invalid JSON API Format: {message}")
         { }
 
-        internal JsonApiFormatException(string message, Exception innerException)
-            : base($"Invalid JSON API Format: {message}", innerException)
+        internal JsonApiFormatException(CausedBy causedBy, string message, Exception innerException)
+            : base(causedBy, $"Invalid JSON API Format: {message}", innerException)
         { }
     }
 }

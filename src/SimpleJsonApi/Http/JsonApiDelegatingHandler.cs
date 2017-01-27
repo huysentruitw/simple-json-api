@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using SimpleJsonApi.Configuration;
 
 namespace SimpleJsonApi.Http
@@ -21,9 +23,19 @@ namespace SimpleJsonApi.Http
         {
             var result = await base.SendAsync(request, cancellationToken);
 
-            if (!request.Headers.Accept.Any(x => x.MediaType.Equals(_configuration.MediaType)) ||
-                ((int) result.StatusCode >= 400 && (int) result.StatusCode < 500))
+            var jsonApiHeaderPresent = request.Headers.Accept.Any(x => x.MediaType.Equals(_configuration.MediaType));
+            var statusCode = (int) result.StatusCode;
+            if (!jsonApiHeaderPresent || (statusCode >= 400 && statusCode < 500))
                 return result;
+
+            var content = result.Content as ObjectContent;
+
+
+
+            if (result.Content is ObjectContent<HttpError>)
+            {
+                
+            }
 
             return result;
         }

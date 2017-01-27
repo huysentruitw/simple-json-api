@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Web.Http;
 using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
@@ -44,7 +45,7 @@ namespace SimpleJsonApi.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            return _configuration.ResourceConfiguration.IsMapped(type);
+            return _configuration.ResourceConfiguration.IsMapped(type) || (type == typeof(HttpError));
         }
 
         public override object ReadFromStream(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
@@ -53,8 +54,8 @@ namespace SimpleJsonApi.Formatters
             using (var jsonTextReader = new JsonTextReader(streamReader))
             {
                 var document = _jsonSerializer.Deserialize<UpdateDocument>(jsonTextReader);
-                if (document?.Data == null) throw new JsonApiFormatException("data is missing");
-                if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException("type is missing");
+                if (document?.Data == null) throw new JsonApiFormatException(CausedBy.Client, "data is missing");
+                if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException(CausedBy.Client, "type is missing");
                 return _documentDeserializerFactory().Deserialize(document, type, _configuration);
             }
         }
