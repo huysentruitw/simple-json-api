@@ -20,6 +20,7 @@ namespace SimpleJsonApi.Http
         private readonly Func<IDocumentDeserializer> _documentDeserializerFunc;
         private readonly Func<IDocumentSerializer> _documentSerializerFunc;
         private readonly JsonSerializer _jsonSerializer;
+        private readonly HttpRequestMessage _request;
 
         public JsonApiMediaTypeFormatter(JsonApiConfiguration configuration,
             Func<IDocumentDeserializer> documentDeserializerFunc,
@@ -35,6 +36,19 @@ namespace SimpleJsonApi.Http
 
             SupportedEncodings.Add(new UTF8Encoding(false, true));
             SupportedMediaTypes.Add(new MediaTypeHeaderValue(_configuration.MediaType));
+        }
+
+        private JsonApiMediaTypeFormatter(HttpRequestMessage request, JsonApiConfiguration configuration,
+            Func<IDocumentDeserializer> documentDeserializerFactory,
+            Func<IDocumentSerializer> documentSerializerFunc)
+            : this(configuration, documentDeserializerFactory, documentSerializerFunc)
+        {
+            _request = request;
+        }
+
+        public override MediaTypeFormatter GetPerRequestFormatterInstance(Type type, HttpRequestMessage request, MediaTypeHeaderValue mediaType)
+        {
+            return new JsonApiMediaTypeFormatter(request, _configuration, _documentDeserializerFunc, _documentSerializerFunc);
         }
 
         public override bool CanReadType(Type type)
