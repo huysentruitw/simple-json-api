@@ -19,12 +19,12 @@ namespace SimpleJsonApi.Sample
             var resourceConfig = new ResourceConfigurationBuilder();
             resourceConfig
                 .Resource<Car>()
-                .WithAllProperties();
+                .MapAllProperties();
 
             resourceConfig
                 .Resource<Driver>()
-                .WithAllProperties()
-                .WithOne<Car>(x => x.CarId);
+                .MapAllProperties()
+                .BelongsTo<Car>(x => x.CarId);
 
             config.UseJsonApi(o =>
             {

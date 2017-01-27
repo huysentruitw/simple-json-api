@@ -22,7 +22,7 @@ namespace SimpleJsonApi.Configuration
             _resourceTypeName = resourceTypeName;
         }
 
-        public ResourceMappingBuilder<TResource> WithAllProperties()
+        public ResourceMappingBuilder<TResource> MapAllProperties()
         {
             typeof(TResource)
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -31,7 +31,7 @@ namespace SimpleJsonApi.Configuration
             return this;
         }
 
-        public ResourceMappingBuilder<TResource> WithProperty(Expression<Func<TResource, object>> expression)
+        public ResourceMappingBuilder<TResource> MapProperty(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
             if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
@@ -39,7 +39,7 @@ namespace SimpleJsonApi.Configuration
             return this;
         }
 
-        public ResourceMappingBuilder<TResource> WithoutProperty(Expression<Func<TResource, object>> expression)
+        public ResourceMappingBuilder<TResource> IgnoreProperty(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
             if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
@@ -47,7 +47,7 @@ namespace SimpleJsonApi.Configuration
             return this;
         }
 
-        public ResourceMappingBuilder<TResource> WithIdProperty(Expression<Func<TResource, object>> expression)
+        public ResourceMappingBuilder<TResource> WithId(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
             if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
@@ -57,7 +57,7 @@ namespace SimpleJsonApi.Configuration
             return this;
         }
 
-        public ResourceMappingBuilder<TResource> WithOne<TRelatedResourceType>(Expression<Func<TResource, object>> expression)
+        public ResourceMappingBuilder<TResource> BelongsTo<TRelatedResourceType>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
             if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
@@ -65,7 +65,7 @@ namespace SimpleJsonApi.Configuration
             return this;
         }
 
-        public ResourceMappingBuilder<TResource> WithMany<TRelatedResourceType>(Expression<Func<TResource, object>> expression)
+        public ResourceMappingBuilder<TResource> HasMany<TRelatedResourceType>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfo();
             if (propertyInfo == null) throw new ArgumentException("Failed to get property info from expression", nameof(expression));
