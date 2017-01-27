@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Web.Http;
 using SimpleJsonApi.Configuration;
+using SimpleJsonApi.Extensions;
 using SimpleJsonApi.Models;
 
 namespace SimpleJsonApi.Serialization
@@ -9,24 +10,15 @@ namespace SimpleJsonApi.Serialization
     {
         public Document Serialize(object instance, Type type, JsonApiConfiguration configuration)
         {
-            if (instance is HttpError) return SerializeHttpError((HttpError) instance, configuration);
+            var httpError = instance as HttpError;
+            if (httpError != null) return SerializeHttpError(httpError);
 
             throw new NotImplementedException();
         }
 
-        private Document SerializeHttpError(HttpError httpError, JsonApiConfiguration configuration)
+        private static Document SerializeHttpError(HttpError httpError)
         {
-            return new Document
-            {
-                Errors = new []
-                {
-                    new Error
-                    {
-                        Title = httpError.Message,
-                        Detail = httpError.ExceptionMessage + Environment.NewLine + httpError.StackTrace
-                    }
-                }
-            };
+            return new Document { Errors = httpError.ToErrors() };
         }
     }
 }
