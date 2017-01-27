@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 
 namespace SimpleJsonApi.Configuration
 {
@@ -10,6 +11,7 @@ namespace SimpleJsonApi.Configuration
 
         public JsonApiConfiguration()
         {
+            SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             SerializerSettings.Converters.Add(new IsoDateTimeConverter());
             SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
         }
