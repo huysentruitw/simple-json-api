@@ -12,7 +12,7 @@ using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Models;
 using SimpleJsonApi.Serialization;
 
-namespace SimpleJsonApi.Formatters
+namespace SimpleJsonApi.Http
 {
     internal sealed class JsonApiMediaTypeFormatter : BufferedMediaTypeFormatter
     {
