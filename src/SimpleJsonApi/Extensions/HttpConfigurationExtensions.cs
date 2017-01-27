@@ -1,5 +1,4 @@
 ﻿using SimpleJsonApi.Configuration;
-using SimpleJsonApi.Formatters;
 using SimpleJsonApi.Http;
 using SimpleJsonApi.Serialization;
 
