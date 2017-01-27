@@ -11,13 +11,16 @@ namespace SimpleJsonApi.Configuration
 {
     public sealed class ResourceMappingBuilder<TResource> : IResourceMappingBuilder
     {
+        private readonly string _resourceTypeName;
         private readonly Type _resourceType = typeof(TResource);
         private readonly Dictionary<string, PropertyInfo> _properties = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, RelationInfo> _relations = new Dictionary<string, RelationInfo>(StringComparer.OrdinalIgnoreCase);
         private string _idPropertyName;
 
-        internal ResourceMappingBuilder()
+        internal ResourceMappingBuilder(string resourceTypeName)
         {
+            if (string.IsNullOrEmpty(resourceTypeName)) throw new ArgumentNullException(nameof(resourceTypeName));
+            _resourceTypeName = resourceTypeName;
         }
 
         public ResourceMappingBuilder<TResource> WithAllProperties()
@@ -78,7 +81,7 @@ namespace SimpleJsonApi.Configuration
 
             Validate();
 
-            return new ResourceMapping<TResource>(_properties, _relations, _idPropertyName);
+            return new ResourceMapping<TResource>(_resourceTypeName, _properties, _relations, _idPropertyName);
         }
 
         private bool HasIdProperty()

@@ -64,7 +64,7 @@ namespace SimpleJsonApi.Serialization
                 {
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
                     if (relationResourceType == null) throw new JsonApiException($"No relation defined for {relation.Key}");
-                    var relationResourceTypeName = configuration.BuildResourceTypeName(relationResourceType);
+                    var relationResourceTypeName = configuration.ResourceConfiguration.GetResourceTypeName(relationResourceType);
                     if (mapping.HasManyRelation(relation.Key))
                     {
                         var relationData = relation.Value.ToObject<ManyRelation>()?.Data;
@@ -95,7 +95,7 @@ namespace SimpleJsonApi.Serialization
 
         private void ValidateResourceType(UpdateDocument document, Type type, JsonApiConfiguration configuration)
         {
-            var destinationResourceType = configuration.BuildResourceTypeName(type);
+            var destinationResourceType = configuration.ResourceConfiguration.GetResourceTypeName(type);
             if (!document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
                 throw new JsonApiException($"Can't convert resource type {document.Data.Type} to {destinationResourceType}");
         }

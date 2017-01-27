@@ -23,5 +23,10 @@ namespace SimpleJsonApi.Configuration
         {
             return _mappings.ContainsKey(resourceType);
         }
+
+        internal string GetResourceTypeName(Type resourceType)
+        {
+            return GetMappingForType(resourceType)?.ResourceTypeName;
+        }
     }
 }

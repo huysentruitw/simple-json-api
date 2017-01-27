@@ -5,6 +5,8 @@ namespace SimpleJsonApi.Configuration
 {
     internal interface IResourceMapping
     {
+        string ResourceTypeName { get; }
+
         void SetId(object instance, Guid id);
 
         Type GetPropertyType(string propertyName);

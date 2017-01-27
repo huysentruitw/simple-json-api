@@ -11,15 +11,19 @@ namespace SimpleJsonApi.Configuration
         private readonly Dictionary<string, RelationInfo> _relations;
         private readonly string _idPropertyName;
 
-        public ResourceMapping(Dictionary<string, PropertyInfo> properties, Dictionary<string, RelationInfo> relations, string idPropertyName)
+        public ResourceMapping(string resourceTypeName, Dictionary<string, PropertyInfo> properties, Dictionary<string, RelationInfo> relations, string idPropertyName)
         {
+            if (string.IsNullOrEmpty(resourceTypeName)) throw new ArgumentNullException(nameof(resourceTypeName));
             if (properties == null) throw new ArgumentNullException(nameof(properties));
             if (relations == null) throw new ArgumentNullException(nameof(relations));
             if (idPropertyName == null) throw new ArgumentNullException(nameof(idPropertyName));
+            ResourceTypeName = resourceTypeName;
             _properties = properties;
             _relations = relations;
             _idPropertyName = idPropertyName;
         }
+
+        public string ResourceTypeName { get; }
 
         public void SetId(object instance, Guid id)
         {
