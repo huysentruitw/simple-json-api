@@ -15,7 +15,6 @@ namespace SimpleJsonApi.Formatters
 {
     internal sealed class JsonApiMediaTypeFormatter : BufferedMediaTypeFormatter
     {
-        public const string JsonApiMediaType = "application/vnd.api+json";
         private readonly JsonApiConfiguration _configuration;
         private readonly Func<IDocumentDeserializer> _documentDeserializerFactory;
         private readonly Func<IDocumentSerializer> _documentSerializerFactory;
@@ -33,7 +32,7 @@ namespace SimpleJsonApi.Formatters
             _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
 
             SupportedEncodings.Add(new UTF8Encoding(false, true));
-            SupportedMediaTypes.Add(new MediaTypeHeaderValue(JsonApiMediaType));
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue(_configuration.MediaType));
         }
 
         public override bool CanReadType(Type type)

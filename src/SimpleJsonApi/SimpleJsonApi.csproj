@@ -72,7 +72,7 @@
     <Compile Include="Exceptions\JsonApiFormatException.cs" />
     <Compile Include="Extensions\ExpressionExtensions.cs" />
     <Compile Include="Extensions\HttpConfigurationExtensions.cs" />
-    <Compile Include="Formatters\JsonApiMediaTypeFormatter.cs" />
+    <Compile Include="Http\JsonApiMediaTypeFormatter.cs" />
     <Compile Include="IChanges.cs" />
     <Compile Include="Models\Document.cs" />
     <Compile Include="Models\UpdateDocument.cs" />
