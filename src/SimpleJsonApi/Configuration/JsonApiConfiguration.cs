@@ -18,8 +18,6 @@ namespace SimpleJsonApi.Configuration
 
         public ResourceConfiguration ResourceConfiguration { get; set; }
 
-        public bool PluralizeResourceTypeNames { get; set; } = true;
-
         public JsonSerializerSettings SerializerSettings { get; } = new JsonSerializerSettings();
 
         internal void Validate()
