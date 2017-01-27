@@ -18,15 +18,18 @@ namespace SimpleJsonApi.Formatters
         public const string JsonApiMediaType = "application/vnd.api+json";
         private readonly JsonApiConfiguration _configuration;
         private readonly Func<IDocumentDeserializer> _documentDeserializerFactory;
+        private readonly Func<IDocumentSerializer> _documentSerializerFactory;
         private readonly JsonSerializer _jsonSerializer;
 
         public JsonApiMediaTypeFormatter(JsonApiConfiguration configuration,
-            Func<IDocumentDeserializer> documentDeserializerFactory)
+            Func<IDocumentDeserializer> documentDeserializerFactory,
+            Func<IDocumentSerializer> documentSerializerFactory)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (documentDeserializerFactory == null) throw new ArgumentNullException(nameof(documentDeserializerFactory));
             _configuration = configuration;
             _documentDeserializerFactory = documentDeserializerFactory;
+            _documentSerializerFactory = documentSerializerFactory;
             _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
 
             SupportedEncodings.Add(new UTF8Encoding(false, true));
@@ -50,7 +53,7 @@ namespace SimpleJsonApi.Formatters
             using (var streamReader = new StreamReader(readStream))
             using (var jsonTextReader = new JsonTextReader(streamReader))
             {
-                var document = _jsonSerializer.Deserialize<Document>(jsonTextReader);
+                var document = _jsonSerializer.Deserialize<UpdateDocument>(jsonTextReader);
                 if (document?.Data == null) throw new JsonApiFormatException("data is missing");
                 if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException("type is missing");
                 return _documentDeserializerFactory().Deserialize(document, type, _configuration);
@@ -59,7 +62,12 @@ namespace SimpleJsonApi.Formatters
 
         public override void WriteToStream(Type type, object value, Stream writeStream, HttpContent content)
         {
-            base.WriteToStream(type, value, writeStream, content);
+            using (var streamWriter = new StreamWriter(writeStream))
+            using (var jsonTextWriter = new JsonTextWriter(streamWriter))
+            {
+                var document = _documentSerializerFactory().Serialize(value, type, _configuration);
+                _jsonSerializer.Serialize(jsonTextWriter, document);
+            }
         }
     }
 }

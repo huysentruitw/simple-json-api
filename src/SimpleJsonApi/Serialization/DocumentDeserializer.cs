@@ -12,7 +12,7 @@ namespace SimpleJsonApi.Serialization
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
 
-        public object Deserialize(Document document, Type type, JsonApiConfiguration configuration)
+        public object Deserialize(UpdateDocument document, Type type, JsonApiConfiguration configuration)
         {
             if (document == null) throw new ArgumentNullException(nameof(document));
             if (type == null) throw new ArgumentNullException(nameof(type));
@@ -38,7 +38,7 @@ namespace SimpleJsonApi.Serialization
             return result;
         }
 
-        public Changes<TResource> BuildChanges<TResource>(Document document, IResourceMapping mapping, JsonApiConfiguration configuration)
+        public Changes<TResource> BuildChanges<TResource>(UpdateDocument document, IResourceMapping mapping, JsonApiConfiguration configuration)
         {
             var changes = new Changes<TResource>();
 
@@ -93,7 +93,7 @@ namespace SimpleJsonApi.Serialization
             return changes;
         }
 
-        private void ValidateResourceType(Document document, Type type, JsonApiConfiguration configuration)
+        private void ValidateResourceType(UpdateDocument document, Type type, JsonApiConfiguration configuration)
         {
             var destinationResourceType = configuration.BuildResourceTypeName(type);
             if (!document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))

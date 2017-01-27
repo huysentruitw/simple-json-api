@@ -66,6 +66,7 @@
     <Compile Include="Configuration\ResourceMappingBuilder.cs" />
     <Compile Include="Configuration\ResourceConfigurationBuilder.cs" />
     <Compile Include="Serialization\DocumentDeserializer.cs" />
+    <Compile Include="Serialization\DocumentSerializer.cs" />
     <Compile Include="Serialization\IDocumentDeserializer.cs" />
     <Compile Include="Exceptions\JsonApiException.cs" />
     <Compile Include="Exceptions\JsonApiFormatException.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Formatters\JsonApiMediaTypeFormatter.cs" />
     <Compile Include="IChanges.cs" />
     <Compile Include="Models\Document.cs" />
+    <Compile Include="Models\UpdateDocument.cs" />
     <Compile Include="Models\DocumentData.cs" />
     <Compile Include="Models\ManyRelation.cs" />
     <Compile Include="Models\RelationData.cs" />
@@ -81,6 +83,7 @@
     <Compile Include="Models\SingleRelation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Changes.cs" />
+    <Compile Include="Serialization\IDocumentSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
