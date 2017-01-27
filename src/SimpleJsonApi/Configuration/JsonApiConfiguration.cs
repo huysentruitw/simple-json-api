@@ -7,8 +7,6 @@ namespace SimpleJsonApi.Configuration
 {
     public sealed class JsonApiConfiguration
     {
-        public const string JsonApiMediaType = "application/vnd.api+json";
-
         public JsonApiConfiguration()
         {
             SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -16,7 +14,7 @@ namespace SimpleJsonApi.Configuration
             SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
         }
 
-        public string MediaType { get; set; } = JsonApiMediaType;
+        public string MediaType { get; set; } = Constants.JsonApiMediaType;
 
         public ResourceConfiguration ResourceConfiguration { get; set; }
 

@@ -65,6 +65,7 @@
     <Compile Include="Configuration\ResourceMapping.cs" />
     <Compile Include="Configuration\ResourceMappingBuilder.cs" />
     <Compile Include="Configuration\ResourceConfigurationBuilder.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Exceptions\CausedBy.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="Serialization\DocumentDeserializer.cs" />
