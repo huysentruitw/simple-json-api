@@ -72,10 +72,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\JsonApiConfigurationTests.cs" />
+    <Compile Include="Configuration\JsonApiConfigurationTests.cs" />
     <Compile Include="Attributes\JsonApiResourceNameAttributeTests.cs" />
-    <Compile Include="Attributes\RelationInfoTests.cs" />
-    <Compile Include="Attributes\ResourceConfigurationTests.cs" />
+    <Compile Include="Configuration\RelationInfoTests.cs" />
+    <Compile Include="Configuration\ResourceConfigurationTests.cs" />
     <Compile Include="ChangesTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
