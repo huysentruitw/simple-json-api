@@ -38,6 +38,7 @@ namespace SimpleJsonApi.Serialization
             return result;
         }
 
+        [Obsolete("Only used by reflection inside Deserialize method", true)]
         public Changes<TResource> BuildChanges<TResource>(UpdateDocument document, IResourceMapping mapping, JsonApiConfiguration configuration)
         {
             var changes = new Changes<TResource>();
