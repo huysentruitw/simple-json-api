@@ -14,6 +14,8 @@ namespace System.Web.Http
             configurationAction?.Invoke(jsonApiConfiguration);
             jsonApiConfiguration.Validate();
 
+            httpConfiguration.MessageHandlers.Add(new JsonApiDelegatingHandler(jsonApiConfiguration));
+
             httpConfiguration.Formatters.Add(new JsonApiMediaTypeFormatter(jsonApiConfiguration,
                 () => new DocumentDeserializer(),
                 () => new DocumentSerializer()));
