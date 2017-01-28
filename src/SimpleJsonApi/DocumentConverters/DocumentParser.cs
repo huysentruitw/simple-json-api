@@ -6,13 +6,13 @@ using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Models;
 
-namespace SimpleJsonApi.Serialization
+namespace SimpleJsonApi.DocumentConverters
 {
-    internal sealed class DocumentDeserializer : IDocumentDeserializer
+    internal sealed class DocumentParser : IDocumentParser
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
 
-        public object Deserialize(Document document, Type type, JsonApiConfiguration configuration)
+        public object ParseDocument(Document document, Type type, JsonApiConfiguration configuration)
         {
             if (document == null) throw new ArgumentNullException(nameof(document));
             if (type == null) throw new ArgumentNullException(nameof(type));
@@ -25,7 +25,7 @@ namespace SimpleJsonApi.Serialization
             var mapping = configuration.ResourceConfiguration.GetMappingForType(type);
             if (mapping == null) throw new JsonApiException(CausedBy.Server, $"No mapping found for resource type {type.Name}");
 
-            var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentDeserializer).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
+            var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
             if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create builder method for type {type.Name}");
 
             var changes = builder.Invoke(this, new object[] { document, mapping, configuration }) as IChanges;

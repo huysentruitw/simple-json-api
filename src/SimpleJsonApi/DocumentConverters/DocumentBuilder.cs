@@ -4,11 +4,11 @@ using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Extensions;
 using SimpleJsonApi.Models;
 
-namespace SimpleJsonApi.Serialization
+namespace SimpleJsonApi.DocumentConverters
 {
-    internal sealed class DocumentSerializer : IDocumentSerializer
+    internal sealed class DocumentBuilder : IDocumentBuilder
     {
-        public Document Serialize(object instance, Type type, JsonApiConfiguration configuration)
+        public Document BuildDocument(object instance, Type type, JsonApiConfiguration configuration)
         {
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);

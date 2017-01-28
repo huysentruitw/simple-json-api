@@ -70,9 +70,9 @@
     <Compile Include="Extensions\HttpErrorExtensions.cs" />
     <Compile Include="Http\JsonApiDelegatingHandler.cs" />
     <Compile Include="Models\Error.cs" />
-    <Compile Include="Serialization\DocumentDeserializer.cs" />
-    <Compile Include="Serialization\DocumentSerializer.cs" />
-    <Compile Include="Serialization\IDocumentDeserializer.cs" />
+    <Compile Include="DocumentConverters\DocumentParser.cs" />
+    <Compile Include="DocumentConverters\DocumentBuilder.cs" />
+    <Compile Include="DocumentConverters\IDocumentParser.cs" />
     <Compile Include="Exceptions\JsonApiException.cs" />
     <Compile Include="Exceptions\JsonApiFormatException.cs" />
     <Compile Include="Extensions\ExpressionExtensions.cs" />
@@ -87,7 +87,7 @@
     <Compile Include="Models\SingleRelation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Changes.cs" />
-    <Compile Include="Serialization\IDocumentSerializer.cs" />
+    <Compile Include="DocumentConverters\IDocumentBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

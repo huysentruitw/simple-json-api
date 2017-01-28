@@ -8,30 +8,30 @@ using System.Text;
 using System.Web.Http;
 using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
+using SimpleJsonApi.DocumentConverters;
 using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Models;
-using SimpleJsonApi.Serialization;
 
 namespace SimpleJsonApi.Http
 {
     internal sealed class JsonApiMediaTypeFormatter : BufferedMediaTypeFormatter
     {
         private readonly JsonApiConfiguration _configuration;
-        private readonly Func<IDocumentDeserializer> _documentDeserializerFunc;
-        private readonly Func<IDocumentSerializer> _documentSerializerFunc;
+        private readonly Func<IDocumentParser> _documentParserFunc;
+        private readonly Func<IDocumentBuilder> _documentBuilderFunc;
         private readonly JsonSerializer _jsonSerializer;
         private readonly HttpRequestMessage _request;
 
         public JsonApiMediaTypeFormatter(JsonApiConfiguration configuration,
-            Func<IDocumentDeserializer> documentDeserializerFunc,
-            Func<IDocumentSerializer> documentSerializerFunc)
+            Func<IDocumentParser> documentParserFunc,
+            Func<IDocumentBuilder> documentBuilderFunc)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            if (documentDeserializerFunc == null) throw new ArgumentNullException(nameof(documentDeserializerFunc));
-            if (documentSerializerFunc == null) throw new ArgumentNullException(nameof(documentSerializerFunc));
+            if (documentParserFunc == null) throw new ArgumentNullException(nameof(documentParserFunc));
+            if (documentBuilderFunc == null) throw new ArgumentNullException(nameof(documentBuilderFunc));
             _configuration = configuration;
-            _documentDeserializerFunc = documentDeserializerFunc;
-            _documentSerializerFunc = documentSerializerFunc;
+            _documentParserFunc = documentParserFunc;
+            _documentBuilderFunc = documentBuilderFunc;
             _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
 
             SupportedEncodings.Add(new UTF8Encoding(false, true));
@@ -39,16 +39,16 @@ namespace SimpleJsonApi.Http
         }
 
         private JsonApiMediaTypeFormatter(HttpRequestMessage request, JsonApiConfiguration configuration,
-            Func<IDocumentDeserializer> documentDeserializerFactory,
-            Func<IDocumentSerializer> documentSerializerFunc)
-            : this(configuration, documentDeserializerFactory, documentSerializerFunc)
+            Func<IDocumentParser> documentParserFunc,
+            Func<IDocumentBuilder> documentBuilderFunc)
+            : this(configuration, documentParserFunc, documentBuilderFunc)
         {
             _request = request;
         }
 
         public override MediaTypeFormatter GetPerRequestFormatterInstance(Type type, HttpRequestMessage request, MediaTypeHeaderValue mediaType)
         {
-            return new JsonApiMediaTypeFormatter(request, _configuration, _documentDeserializerFunc, _documentSerializerFunc);
+            return new JsonApiMediaTypeFormatter(request, _configuration, _documentParserFunc, _documentBuilderFunc);
         }
 
         public override bool CanReadType(Type type)
@@ -71,7 +71,7 @@ namespace SimpleJsonApi.Http
                 var document = _jsonSerializer.Deserialize<Document>(jsonTextReader);
                 if (document?.Data == null) throw new JsonApiFormatException(CausedBy.Client, "data is missing");
                 if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException(CausedBy.Client, "type is missing");
-                return _documentDeserializerFunc().Deserialize(document, type, _configuration);
+                return _documentParserFunc().ParseDocument(document, type, _configuration);
             }
         }
 
@@ -80,7 +80,7 @@ namespace SimpleJsonApi.Http
             using (var streamWriter = new StreamWriter(writeStream))
             using (var jsonTextWriter = new JsonTextWriter(streamWriter))
             {
-                var document = _documentSerializerFunc().Serialize(value, type, _configuration);
+                var document = _documentBuilderFunc().BuildDocument(value, type, _configuration);
                 _jsonSerializer.Serialize(jsonTextWriter, document);
             }
         }
