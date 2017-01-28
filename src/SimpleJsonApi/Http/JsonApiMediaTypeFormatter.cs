@@ -68,7 +68,7 @@ namespace SimpleJsonApi.Http
             using (var streamReader = new StreamReader(readStream))
             using (var jsonTextReader = new JsonTextReader(streamReader))
             {
-                var document = _jsonSerializer.Deserialize<UpdateDocument>(jsonTextReader);
+                var document = _jsonSerializer.Deserialize<Document>(jsonTextReader);
                 if (document?.Data == null) throw new JsonApiFormatException(CausedBy.Client, "data is missing");
                 if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException(CausedBy.Client, "type is missing");
                 return _documentDeserializerFunc().Deserialize(document, type, _configuration);

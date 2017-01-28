@@ -80,7 +80,6 @@
     <Compile Include="Http\JsonApiMediaTypeFormatter.cs" />
     <Compile Include="IChanges.cs" />
     <Compile Include="Models\Document.cs" />
-    <Compile Include="Models\UpdateDocument.cs" />
     <Compile Include="Models\DocumentData.cs" />
     <Compile Include="Models\ManyRelation.cs" />
     <Compile Include="Models\RelationData.cs" />
