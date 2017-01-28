@@ -27,7 +27,7 @@ namespace SimpleJsonApi.DocumentConverters
             if (isGenericChangesObject) type = type.GenericTypeArguments.First();
 
             ValidateResourceType(document, type);
-            var mapping = _resourceConfigurations[type];
+            var mapping = _resourceConfigurations[type]?.Mapping;
             if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
