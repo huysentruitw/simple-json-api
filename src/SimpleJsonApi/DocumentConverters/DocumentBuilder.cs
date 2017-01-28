@@ -8,7 +8,15 @@ namespace SimpleJsonApi.DocumentConverters
 {
     internal sealed class DocumentBuilder : IDocumentBuilder
     {
-        public Document BuildDocument(object instance, Type type, JsonApiConfiguration configuration)
+        private readonly JsonApiConfiguration _configuration;
+
+        public DocumentBuilder(JsonApiConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            _configuration = configuration;
+        }
+
+        public Document BuildDocument(object instance, Type type)
         {
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);

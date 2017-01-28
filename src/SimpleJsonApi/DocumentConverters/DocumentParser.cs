@@ -11,24 +11,30 @@ namespace SimpleJsonApi.DocumentConverters
     internal sealed class DocumentParser : IDocumentParser
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
+        private readonly JsonApiConfiguration _configuration;
 
-        public object ParseDocument(Document document, Type type, JsonApiConfiguration configuration)
+        public DocumentParser(JsonApiConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            _configuration = configuration;
+        }
+
+        public object ParseDocument(Document document, Type type)
         {
             if (document == null) throw new ArgumentNullException(nameof(document));
             if (type == null) throw new ArgumentNullException(nameof(type));
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             var isGenericChangesObject = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Changes<>);
             if (isGenericChangesObject) type = type.GenericTypeArguments.First();
 
-            ValidateResourceType(document, type, configuration);
-            var mapping = configuration.ResourceConfiguration.GetMappingForType(type);
+            ValidateResourceType(document, type);
+            var mapping = _configuration.ResourceConfiguration.GetMappingForType(type);
             if (mapping == null) throw new JsonApiException(CausedBy.Server, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
             if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create builder method for type {type.Name}");
 
-            var changes = builder.Invoke(this, new object[] { document, mapping, configuration }) as IChanges;
+            var changes = builder.Invoke(this, new object[] { document, mapping }) as IChanges;
             if (changes == null) throw new JsonApiException(CausedBy.Server, $"Builder method did not generate a class that inherits from {nameof(IChanges)}");
 
             if (isGenericChangesObject) return changes;
@@ -39,7 +45,7 @@ namespace SimpleJsonApi.DocumentConverters
         }
 
         [Obsolete("Only used by reflection inside Deserialize method", true)]
-        public Changes<TResource> BuildChanges<TResource>(Document document, IResourceMapping mapping, JsonApiConfiguration configuration)
+        public Changes<TResource> BuildChanges<TResource>(Document document, IResourceMapping mapping)
         {
             var changes = new Changes<TResource>();
 
@@ -65,7 +71,7 @@ namespace SimpleJsonApi.DocumentConverters
                 {
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
                     if (relationResourceType == null) throw new JsonApiException(CausedBy.Client, $"Unknown relation {relation.Key}");
-                    var relationResourceTypeName = configuration.ResourceConfiguration.GetResourceTypeName(relationResourceType);
+                    var relationResourceTypeName = GetResourceTypeName(relationResourceType);
                     if (mapping.HasManyRelation(relation.Key))
                     {
                         var relationData = relation.Value.ToObject<ManyRelation>()?.Data;
@@ -94,9 +100,12 @@ namespace SimpleJsonApi.DocumentConverters
             return changes;
         }
 
-        private void ValidateResourceType(Document document, Type type, JsonApiConfiguration configuration)
+        private string GetResourceTypeName(Type type)
+            => _configuration.ResourceConfiguration.GetResourceTypeName(type);
+
+        private void ValidateResourceType(Document document, Type type)
         {
-            var destinationResourceType = configuration.ResourceConfiguration.GetResourceTypeName(type);
+            var destinationResourceType = GetResourceTypeName(type);
             if (!document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
                 throw new JsonApiException(CausedBy.Client, $"Invalid resource type {document.Data.Type} (should be {destinationResourceType})");
         }

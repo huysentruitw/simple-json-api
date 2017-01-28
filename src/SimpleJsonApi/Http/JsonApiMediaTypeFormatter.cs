@@ -71,7 +71,7 @@ namespace SimpleJsonApi.Http
                 var document = _jsonSerializer.Deserialize<Document>(jsonTextReader);
                 if (document?.Data == null) throw new JsonApiFormatException(CausedBy.Client, "data is missing");
                 if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException(CausedBy.Client, "type is missing");
-                return _documentParserFunc().ParseDocument(document, type, _configuration);
+                return _documentParserFunc().ParseDocument(document, type);
             }
         }
 
@@ -80,7 +80,7 @@ namespace SimpleJsonApi.Http
             using (var streamWriter = new StreamWriter(writeStream))
             using (var jsonTextWriter = new JsonTextWriter(streamWriter))
             {
-                var document = _documentBuilderFunc().BuildDocument(value, type, _configuration);
+                var document = _documentBuilderFunc().BuildDocument(value, type);
                 _jsonSerializer.Serialize(jsonTextWriter, document);
             }
         }
