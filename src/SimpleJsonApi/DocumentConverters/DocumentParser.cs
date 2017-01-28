@@ -29,7 +29,7 @@ namespace SimpleJsonApi.DocumentConverters
 
             ValidateResourceType(document, type);
             var mapping = _configuration.ResourceConfiguration.GetMappingForType(type);
-            if (mapping == null) throw new JsonApiException(CausedBy.Server, $"No mapping found for resource type {type.Name}");
+            if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
             if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create builder method for type {type.Name}");
