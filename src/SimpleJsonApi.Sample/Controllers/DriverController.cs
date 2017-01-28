@@ -9,14 +9,14 @@ namespace SimpleJsonApi.Sample.Controllers
     [RoutePrefix("api/drivers")]
     public class DriverController : ApiController
     {
-        private readonly Dictionary<Guid, Driver> _drivers = new Dictionary<Guid, Driver>();
+        private static readonly Dictionary<Guid, Driver> Drivers = new Dictionary<Guid, Driver>();
 
         [HttpGet]
         [Route("")]
         [ResponseType(typeof(IEnumerable<Driver>))]
         public IHttpActionResult GetDrivers()
         {
-            return Ok(_drivers);
+            return Ok(Drivers);
         }
 
         [HttpGet]
@@ -24,8 +24,8 @@ namespace SimpleJsonApi.Sample.Controllers
         [ResponseType(typeof(Driver))]
         public IHttpActionResult GetDriver(Guid id)
         {
-            if (!_drivers.ContainsKey(id)) return NotFound();
-            return Ok(_drivers[id]);
+            if (!Drivers.ContainsKey(id)) return NotFound();
+            return Ok(Drivers[id]);
         }
 
         [HttpPost]
@@ -33,7 +33,7 @@ namespace SimpleJsonApi.Sample.Controllers
         public IHttpActionResult CreateDriver(Driver driver)
         {
             driver.Id = Guid.NewGuid();
-            _drivers.Add(driver.Id, driver);
+            Drivers.Add(driver.Id, driver);
             return Ok();
         }
 
@@ -41,8 +41,8 @@ namespace SimpleJsonApi.Sample.Controllers
         [Route("{id}")]
         public IHttpActionResult UpdateDriver(Guid id, Driver driver)
         {
-            if (!_drivers.ContainsKey(id)) return NotFound();
-            _drivers[id] = driver;
+            if (!Drivers.ContainsKey(id)) return NotFound();
+            Drivers[id] = driver;
             return Ok();
         }
 
@@ -50,8 +50,8 @@ namespace SimpleJsonApi.Sample.Controllers
         [Route("{id}")]
         public IHttpActionResult PartiallyUpdateDriver(Guid id, Changes<Driver> driverChanges)
         {
-            if (!_drivers.ContainsKey(id)) return NotFound();
-            driverChanges.ApplyTo(_drivers[id]);
+            if (!Drivers.ContainsKey(id)) return NotFound();
+            driverChanges.ApplyTo(Drivers[id]);
             return Ok();
         }
     }
