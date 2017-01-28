@@ -10,12 +10,11 @@ namespace SimpleJsonApi.DocumentConverters
 {
     internal sealed class DocumentBuilder : IDocumentBuilder
     {
-        private readonly JsonApiConfiguration _configuration;
+        private readonly IResourceConfigurations _resourceConfigurations;
 
-        public DocumentBuilder(JsonApiConfiguration configuration)
+        public DocumentBuilder(IResourceConfigurations resourceConfigurations)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            _configuration = configuration;
+            _resourceConfigurations = resourceConfigurations;
         }
 
         public Document BuildDocument(object instance, Type type, Uri requestUri)
@@ -23,7 +22,7 @@ namespace SimpleJsonApi.DocumentConverters
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);
 
-            var mapping = _configuration.ResourceConfiguration.GetMappingForType(type);
+            var mapping = _resourceConfigurations[type];
             if (mapping == null) throw new JsonApiException(CausedBy.Server, $"No mapping found for resource type {type.Name}");
 
             var document = new Document

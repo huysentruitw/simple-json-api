@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using NUnit.Framework;
 using SimpleJsonApi.Configuration;
 
-namespace SimpleJsonApi.Tests.Attributes
+namespace SimpleJsonApi.Tests.Configuration
 {
     [TestFixture]
     public class JsonApiConfigurationTests
@@ -20,10 +20,17 @@ namespace SimpleJsonApi.Tests.Attributes
         }
 
         [Test]
+        public void JsonApiConfiguration_Constructor_VerifyContractResolver()
+        {
+            var config = new JsonApiConfiguration();
+            Assert.True(config.SerializerSettings.ContractResolver.GetType() == typeof(CamelCasePropertyNamesContractResolver));
+        }
+
+        [Test]
         public void JsonApiConfiguration_Validate_NoResourceConfiguration_ShouldThrowArgumentNullException()
         {
             var ex = Assert.Throws<ArgumentNullException>(() => new JsonApiConfiguration().Validate());
-            Assert.That(ex.ParamName, Is.EqualTo("ResourceConfiguration"));
+            Assert.That(ex.ParamName, Is.EqualTo("ResourceConfigurations"));
         }
 
         [Test]
@@ -31,7 +38,7 @@ namespace SimpleJsonApi.Tests.Attributes
         {
             var config = new JsonApiConfiguration
             {
-                ResourceConfiguration = new ResourceConfiguration(new Dictionary<Type, IResourceMapping>())
+                ResourceConfigurations = new ResourceConfigurationsBuilder().Build()
             };
 
             Assert.DoesNotThrow(() => config.Validate());

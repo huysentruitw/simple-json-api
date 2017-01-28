@@ -55,12 +55,12 @@ namespace SimpleJsonApi.Http
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Changes<>))
                 type = type.GetGenericArguments().First();
-            return _configuration.ResourceConfiguration.IsMapped(type);
+            return _configuration.ResourceConfigurations.Contains(type);
         }
 
         public override bool CanWriteType(Type type)
         {
-            return _configuration.ResourceConfiguration.IsMapped(type) || (type == typeof(HttpError));
+            return _configuration.ResourceConfigurations.Contains(type) || (type == typeof(HttpError));
         }
 
         public override object ReadFromStream(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)

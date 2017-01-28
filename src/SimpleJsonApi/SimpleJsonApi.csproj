@@ -57,17 +57,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\JsonApiResourceNameAttribute.cs" />
+    <Compile Include="Configuration\Internal\IdPropertyInfo.cs" />
+    <Compile Include="Configuration\Internal\IResourceConfigurationBuilder.cs" />
+    <Compile Include="Configuration\Internal\RelationKind.cs" />
+    <Compile Include="Configuration\Internal\ResourceConfiguration.cs" />
+    <Compile Include="Configuration\Internal\ResourceConfigurations.cs" />
+    <Compile Include="Configuration\Internal\ResourceMapping.cs" />
+    <Compile Include="Configuration\IResourceConfiguration.cs" />
+    <Compile Include="Configuration\Internal\RelationInfo.cs" />
+    <Compile Include="Configuration\IResourceConfigurations.cs" />
     <Compile Include="Configuration\IResourceMapping.cs" />
-    <Compile Include="Configuration\IResourceMappingBuilder.cs" />
-    <Compile Include="Configuration\JsonApiConfiguration.cs" />
-    <Compile Include="Configuration\RelationInfo.cs" />
-    <Compile Include="Configuration\ResourceConfiguration.cs" />
-    <Compile Include="Configuration\ResourceMapping.cs" />
-    <Compile Include="Configuration\ResourceMappingBuilder.cs" />
     <Compile Include="Configuration\ResourceConfigurationBuilder.cs" />
+    <Compile Include="Configuration\JsonApiConfiguration.cs" />
+    <Compile Include="Configuration\ResourceConfigurationsBuilder.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Exceptions\CausedBy.cs" />
     <Compile Include="Extensions\HttpErrorExtensions.cs" />
+    <Compile Include="Extensions\PropertyInfoExtensions.cs" />
     <Compile Include="Http\JsonApiDelegatingHandler.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="DocumentConverters\DocumentParser.cs" />
@@ -93,6 +99,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

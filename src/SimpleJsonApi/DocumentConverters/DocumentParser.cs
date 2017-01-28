@@ -11,12 +11,11 @@ namespace SimpleJsonApi.DocumentConverters
     internal sealed class DocumentParser : IDocumentParser
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
-        private readonly JsonApiConfiguration _configuration;
+        private readonly IResourceConfigurations _resourceConfigurations;
 
-        public DocumentParser(JsonApiConfiguration configuration)
+        public DocumentParser(IResourceConfigurations resourceConfigurations)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            _configuration = configuration;
+            _resourceConfigurations = resourceConfigurations;
         }
 
         public object ParseDocument(Document document, Type type)
@@ -28,7 +27,7 @@ namespace SimpleJsonApi.DocumentConverters
             if (isGenericChangesObject) type = type.GenericTypeArguments.First();
 
             ValidateResourceType(document, type);
-            var mapping = _configuration.ResourceConfiguration.GetMappingForType(type);
+            var mapping = _resourceConfigurations[type];
             if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
@@ -59,9 +58,9 @@ namespace SimpleJsonApi.DocumentConverters
             {
                 foreach (var attribute in document.Data.Attributes)
                 {
-                    var propertyType = mapping.GetPropertyType(attribute.Key);
-                    if (propertyType == null) continue;
-                    changes.AddChange(resource => mapping.SetProperty(resource, attribute.Key, attribute.Value.ToObject(propertyType)));
+                    var attributeType = mapping.GetAttributeType(attribute.Key);
+                    if (attributeType == null) continue;
+                    changes.AddChange(resource => mapping.SetAttributeValue(resource, attribute.Key, attribute.Value.ToObject(attributeType)));
                 }
             }
 
@@ -72,7 +71,7 @@ namespace SimpleJsonApi.DocumentConverters
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
                     if (relationResourceType == null) throw new JsonApiException(CausedBy.Client, $"Unknown relation {relation.Key}");
                     var relationResourceTypeName = GetResourceTypeName(relationResourceType);
-                    if (mapping.HasManyRelation(relation.Key))
+                    if (mapping.IsHasManyRelation(relation.Key))
                     {
                         var relationData = relation.Value.ToObject<ManyRelation>()?.Data;
                         if (relationData != null)
@@ -80,7 +79,7 @@ namespace SimpleJsonApi.DocumentConverters
                             if (relationData.Any(x => !x.Type.Equals(relationResourceTypeName)))
                                 throw new JsonApiFormatException(CausedBy.Client, $"Not all relations specified for {relation.Key} are of the type {relationResourceTypeName}");
                             var relationIds = relationData.Select(x => x.Id);
-                            changes.AddChange(resource => mapping.SetRelations(resource, relation.Key, relationIds));
+                            changes.AddChange(resource => mapping.SetRelationValues(resource, relation.Key, relationIds));
                         }
                     }
                     else
@@ -91,7 +90,7 @@ namespace SimpleJsonApi.DocumentConverters
                             if (!relationData.Type.Equals(relationResourceTypeName))
                                 throw new JsonApiFormatException(CausedBy.Client, $"Relation type specified for {relation.Key} must be {relationResourceTypeName} instead of {relationData.Type}");
                             var relationId = relationData.Id;
-                            changes.AddChange(resource => mapping.SetRelation(resource, relation.Key, relationId));
+                            changes.AddChange(resource => mapping.SetRelationValue(resource, relation.Key, relationId));
                         }
                     }
                 }
@@ -100,8 +99,7 @@ namespace SimpleJsonApi.DocumentConverters
             return changes;
         }
 
-        private string GetResourceTypeName(Type type)
-            => _configuration.ResourceConfiguration.GetResourceTypeName(type);
+        private string GetResourceTypeName(Type type) => _resourceConfigurations[type]?.TypeName;
 
         private void ValidateResourceType(Document document, Type type)
         {

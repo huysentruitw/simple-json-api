@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
-using SimpleJsonApi.Configuration;
+using SimpleJsonApi.Configuration.Internal;
 
-namespace SimpleJsonApi.Tests.Attributes
+namespace SimpleJsonApi.Tests.Configuration.Internal
 {
     [TestFixture]
     public class RelationInfoTests
@@ -12,11 +12,11 @@ namespace SimpleJsonApi.Tests.Attributes
             var info = new RelationInfo(
                 typeof(Resource).GetProperty(nameof(Resource.Age)),
                 typeof(Resource),
-                true);
+                RelationKind.HasMany);
 
             Assert.That(info.PropertyInfo, Is.EqualTo(typeof(Resource).GetProperty(nameof(Resource.Age))));
             Assert.That(info.ResourceType, Is.EqualTo(typeof(Resource)));
-            Assert.That(info.HasMany, Is.True);
+            Assert.That(info.Kind, Is.EqualTo(RelationKind.HasMany));
         }
 
         private class Resource

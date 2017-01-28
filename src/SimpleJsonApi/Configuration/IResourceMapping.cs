@@ -3,24 +3,22 @@ using System.Collections.Generic;
 
 namespace SimpleJsonApi.Configuration
 {
-    internal interface IResourceMapping
+    public interface IResourceMapping
     {
-        string ResourceTypeName { get; }
-
         void SetId(object instance, Guid id);
 
-        Type GetPropertyType(string propertyName);
+        Type GetAttributeType(string name);
 
-        void SetProperty(object instance, string propertyName, object propertyValue);
+        void SetAttributeValue(object instance, string name, object value);
 
-        object GetProperty(object instance, string propertyName);
+        object GetAttributeValue(object instance, string name);
 
-        Type GetResourceTypeOfRelation(string propertyName);
+        Type GetResourceTypeOfRelation(string name);
 
-        bool HasManyRelation(string propertyName);
+        bool IsHasManyRelation(string name);
 
-        void SetRelation(object instance, string propertyName, Guid relationId);
+        void SetRelationValue(object instance, string name, Guid relationId);
 
-        void SetRelations(object instance, string propertyName, IEnumerable<Guid> relationIds);
+        void SetRelationValues(object instance, string name, IEnumerable<Guid> relationIds);
     }
 }

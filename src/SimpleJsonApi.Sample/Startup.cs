@@ -16,19 +16,17 @@ namespace SimpleJsonApi.Sample
             var config = new HttpConfiguration();
             config.Formatters.JsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
-            var resourceConfig = new ResourceConfigurationBuilder();
+            var resourceConfig = new ResourceConfigurationsBuilder();
             resourceConfig
-                .Resource<Car>()
-                .MapAllProperties();
+                .Resource<Car>();
 
             resourceConfig
                 .Resource<Driver>()
-                .MapAllProperties()
                 .BelongsTo<Car>(x => x.CarId);
 
             config.UseJsonApi(o =>
             {
-                o.ResourceConfiguration = resourceConfig.Build();
+                o.ResourceConfigurations = resourceConfig.Build();
             });
 
             config.MapHttpAttributeRoutes();
