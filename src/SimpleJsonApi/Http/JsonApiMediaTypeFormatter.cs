@@ -80,7 +80,7 @@ namespace SimpleJsonApi.Http
             using (var streamWriter = new StreamWriter(writeStream))
             using (var jsonTextWriter = new JsonTextWriter(streamWriter))
             {
-                var document = _documentBuilderFunc().BuildDocument(value, type);
+                var document = _documentBuilderFunc().BuildDocument(value, type, _request.RequestUri);
                 _jsonSerializer.Serialize(jsonTextWriter, document);
             }
         }
