@@ -77,6 +77,7 @@
     <Compile Include="Extensions\HttpErrorExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PropertyInfoExtensions.cs" />
+    <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="Http\JsonApiDelegatingHandler.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="DocumentConverters\DocumentParser.cs" />
