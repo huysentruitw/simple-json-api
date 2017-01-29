@@ -8,7 +8,7 @@ namespace SimpleJsonApi.Models
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IDictionary<string, string> Links { get; set; }
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public DocumentData Data { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
