@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
-using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Extensions;
@@ -13,12 +13,10 @@ namespace SimpleJsonApi.DocumentConverters
     internal sealed class DocumentBuilder : IDocumentBuilder
     {
         private readonly JsonApiConfiguration _configuration;
-        private readonly JsonSerializer _jsonSerializer;
 
         public DocumentBuilder(JsonApiConfiguration configuration)
         {
             _configuration = configuration;
-            _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
         }
 
         public Document BuildDocument(object instance, Type type, Uri requestUri)
@@ -26,16 +24,13 @@ namespace SimpleJsonApi.DocumentConverters
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);
 
-            var resourceConfiguration = _configuration.ResourceConfigurations[type];
-            if (resourceConfiguration == null) throw new JsonApiException(CausedBy.Server, $"No configuration found for resource type {type.Name}");
+            var baseUri = requestUri.GetAbsoluteBaseUri();
 
-            var document = new Document
+            return new Document
             {
                 Links = GenerateLinks(requestUri),
-                Data = GenerateData(instance, resourceConfiguration)
+                Data = GenerateDataObject(instance)
             };
-
-            return document;
         }
 
         private IDictionary<string, string> GenerateLinks(Uri requestUri)
@@ -46,13 +41,23 @@ namespace SimpleJsonApi.DocumentConverters
             };
         }
 
-        private DocumentData GenerateData(object instance, IResourceConfiguration configuration)
+        private object GenerateDataObject(object instance)
+            => instance is IEnumerable
+                    ? from object resource in (IEnumerable) instance select GenerateSingleDataObject(resource)
+                    : (object)GenerateSingleDataObject(instance);
+
+        private DocumentData GenerateSingleDataObject(object instance)
         {
-            var mapping = configuration.Mapping;
+            var resourceType = instance.GetType();
+            var resourceConfiguration = _configuration.ResourceConfigurations[resourceType];
+            if (resourceConfiguration == null)
+                throw new JsonApiException(CausedBy.Server, $"No configuration found for resource type {resourceType.Name}");
+
+            var mapping = resourceConfiguration.Mapping;
             return new DocumentData
             {
                 Id = mapping.GetId(instance),
-                Type = configuration.TypeName,
+                Type = resourceConfiguration.TypeName,
                 Attributes = GenerateAttributes(instance, mapping),
                 Relationships = GenerateRelationships(instance, mapping)
             };
@@ -100,9 +105,6 @@ namespace SimpleJsonApi.DocumentConverters
             return relationships;
         }
 
-        private static Document SerializeHttpError(HttpError httpError)
-        {
-            return new Document { Errors = httpError.ToErrors() };
-        }
+        private static Document SerializeHttpError(HttpError httpError) => new Document { Errors = httpError.ToErrors() };
     }
 }

@@ -31,14 +31,17 @@ namespace SimpleJsonApi.DocumentConverters
             var isGenericChangesObject = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Changes<>);
             if (isGenericChangesObject) type = type.GenericTypeArguments.First();
 
-            ValidateResourceType(document, type);
+            var documentData = document.Data?.ParseAs<DocumentData>(_jsonSerializer);
+            if (documentData == null) throw new JsonApiException(CausedBy.Client, $"Document data not found or invalid");
+
+            ValidateResourceType(documentData, type);
             var mapping = _configuration.ResourceConfigurations[type]?.Mapping;
             if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
             if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create builder method for type {type.Name}");
 
-            var changes = builder.Invoke(this, new object[] { document, mapping }) as IChanges;
+            var changes = builder.Invoke(this, new object[] { documentData, mapping }) as IChanges;
             if (changes == null) throw new JsonApiException(CausedBy.Server, $"Builder method did not generate a class that inherits from {nameof(IChanges)}");
 
             if (isGenericChangesObject) return changes;
@@ -49,19 +52,18 @@ namespace SimpleJsonApi.DocumentConverters
         }
 
         [Obsolete("Only used by reflection inside Deserialize method", true)]
-        public Changes<TResource> BuildChanges<TResource>(Document document, IResourceMapping mapping)
+        public Changes<TResource> BuildChanges<TResource>(DocumentData data, IResourceMapping mapping)
         {
             var changes = new Changes<TResource>();
 
-            if (document.Data.Id.HasValue)
+            if (data.Id.HasValue)
             {
-                var id = document.Data.Id.Value;
-                changes.AddChange(resource => mapping.SetId(resource, id));
+                changes.AddChange(resource => mapping.SetId(resource, data.Id.Value));
             }
 
-            if (document.Data.Attributes != null)
+            if (data.Attributes != null)
             {
-                foreach (var attribute in document.Data.Attributes)
+                foreach (var attribute in data.Attributes)
                 {
                     var attributeType = mapping.GetAttributeType(attribute.Key);
                     if (attributeType == null) continue;
@@ -70,9 +72,9 @@ namespace SimpleJsonApi.DocumentConverters
                 }
             }
 
-            if (document.Data.Relationships != null)
+            if (data.Relationships != null)
             {
-                foreach (var relation in document.Data.Relationships)
+                foreach (var relation in data.Relationships)
                 {
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
                     if (relationResourceType == null) throw new JsonApiException(CausedBy.Client, $"Unknown relation {relation.Key}");
@@ -107,11 +109,11 @@ namespace SimpleJsonApi.DocumentConverters
 
         private string GetResourceTypeName(Type type) => _configuration.ResourceConfigurations[type]?.TypeName;
 
-        private void ValidateResourceType(Document document, Type type)
+        private void ValidateResourceType(DocumentData data, Type type)
         {
             var destinationResourceType = GetResourceTypeName(type);
-            if (!document.Data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
-                throw new JsonApiException(CausedBy.Client, $"Invalid resource type {document.Data.Type} (should be {destinationResourceType})");
+            if (!data.Type.Equals(destinationResourceType, StringComparison.OrdinalIgnoreCase))
+                throw new JsonApiException(CausedBy.Client, $"Invalid resource type {data.Type} (should be {destinationResourceType})");
         }
     }
 }

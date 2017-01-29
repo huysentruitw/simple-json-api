@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,7 +10,6 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.DocumentConverters;
-using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Models;
 
 namespace SimpleJsonApi.Http
@@ -60,7 +60,10 @@ namespace SimpleJsonApi.Http
 
         public override bool CanWriteType(Type type)
         {
-            return _configuration.ResourceConfigurations.Contains(type) || (type == typeof(HttpError));
+            if (type == typeof(HttpError)) return true;
+            if (typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType)
+                type = type.GetGenericArguments().First();
+            return _configuration.ResourceConfigurations.Contains(type);
         }
 
         public override object ReadFromStream(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
@@ -69,8 +72,6 @@ namespace SimpleJsonApi.Http
             using (var jsonTextReader = new JsonTextReader(streamReader))
             {
                 var document = _jsonSerializer.Deserialize<Document>(jsonTextReader);
-                if (document?.Data == null) throw new JsonApiFormatException(CausedBy.Client, "data is missing");
-                if (string.IsNullOrEmpty(document.Data.Type)) throw new JsonApiFormatException(CausedBy.Client, "type is missing");
                 return _documentParserFunc().ParseDocument(document, type);
             }
         }

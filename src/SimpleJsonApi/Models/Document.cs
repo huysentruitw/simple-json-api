@@ -8,8 +8,11 @@ namespace SimpleJsonApi.Models
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IDictionary<string, string> Links { get; set; }
 
+        /// <summary>
+        /// Data is either a <see cref="DocumentData"/> or <see cref="IEnumerable{DocumentData}"/> instance.
+        /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Include)]
-        public DocumentData Data { get; set; }
+        public object Data { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IEnumerable<Error> Errors { get; set; }
