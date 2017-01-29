@@ -153,7 +153,7 @@ namespace SimpleJsonApi.Configuration
             Validate();
 
             var attributes = _properties
-                .Where(x => !_relations.ContainsKey(x.Key) && _idPropertyName.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
+                .Where(x => !_relations.ContainsKey(x.Key) && !_idPropertyName.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
 
             var idProperty = new IdPropertyInfo(_idPropertyName, _properties[_idPropertyName]);
