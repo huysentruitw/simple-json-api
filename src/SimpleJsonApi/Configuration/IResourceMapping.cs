@@ -16,6 +16,19 @@ namespace SimpleJsonApi.Configuration
         void SetId(object instance, Guid id);
 
         /// <summary>
+        /// Gets the id property of a resource instance using the correct mapping.
+        /// </summary>
+        /// <param name="instance">The resource instance.</param>
+        /// <returns>The id.</returns>
+        Guid GetId(object instance);
+
+        /// <summary>
+        /// Gets a list of mapped attribute names.
+        /// </summary>
+        /// <returns>The list of mapped attribute names.</returns>
+        IEnumerable<string> GetAttributeNames();
+
+        /// <summary>
         /// Gets the type of an attribute property.
         /// </summary>
         /// <param name="name">The JSON API name of the property.</param>
@@ -37,6 +50,12 @@ namespace SimpleJsonApi.Configuration
         /// <param name="name">The JSON API name of the property.</param>
         /// <returns>The value.</returns>
         object GetAttributeValue(object instance, string name);
+
+        /// <summary>
+        /// Gets a list of mapped relation names.
+        /// </summary>
+        /// <returns>The list of mapped relation names.</returns>
+        IEnumerable<string> GetRelationNames();
 
         /// <summary>
         /// Gets the resource type of the relation identified by its JSON API name.
@@ -66,6 +85,14 @@ namespace SimpleJsonApi.Configuration
         /// <param name="instance">The resource instance.</param>
         /// <param name="name">The JSON API name of the relation property.</param>
         /// <param name="relationIds">The ids of the related resource.</param>
-        void SetRelationValues(object instance, string name, IEnumerable<Guid> relationIds);
+        void SetRelationValue(object instance, string name, IEnumerable<Guid> relationIds);
+
+        /// <summary>
+        /// Gets the relation id(s) of a relation.
+        /// </summary>
+        /// <param name="instance">The resource instance.</param>
+        /// <param name="name">The JSON API name of the relation property.</param>
+        /// <returns>The id(s) of the related resource.</returns>
+        object GetRelationValue(object instance, string name);
     }
 }

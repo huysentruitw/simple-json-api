@@ -22,11 +22,17 @@ namespace SimpleJsonApi.Configuration.Internal
 
         public void SetId(object instance, Guid id) => _idProperty.Property.SetValue(instance, id);
 
+        public Guid GetId(object instance) => (Guid)_idProperty.Property.GetValue(instance);
+
+        public IEnumerable<string> GetAttributeNames() => _attributeProperties.Keys;
+
         public Type GetAttributeType(string name) => GetAttributeInfo(name)?.PropertyType;
 
         public void SetAttributeValue(object instance, string name, object value) => GetAttributeInfo(name)?.SetValue(instance, value);
 
         public object GetAttributeValue(object instance, string name) => GetAttributeInfo(name).GetValue(instance);
+
+        public IEnumerable<string> GetRelationNames() => _relationProperties.Keys;
 
         public Type GetResourceTypeOfRelation(string name) => GetRelationInfo(name)?.ResourceType;
 
@@ -35,8 +41,10 @@ namespace SimpleJsonApi.Configuration.Internal
         public void SetRelationValue(object instance, string name, Guid relationId)
             => GetRelationInfo(name)?.PropertyInfo.SetValue(instance, relationId);
 
-        public void SetRelationValues(object instance, string name, IEnumerable<Guid> relationIds)
+        public void SetRelationValue(object instance, string name, IEnumerable<Guid> relationIds)
             => GetRelationInfo(name)?.PropertyInfo.SetValue(instance, relationIds);
+
+        public object GetRelationValue(object instance, string name) => GetRelationInfo(name)?.PropertyInfo.GetValue(instance);
 
         private PropertyInfo GetAttributeInfo(string name)
         {

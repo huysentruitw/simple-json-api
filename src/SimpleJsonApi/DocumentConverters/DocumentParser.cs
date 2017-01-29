@@ -79,7 +79,7 @@ namespace SimpleJsonApi.DocumentConverters
                             if (relationData.Any(x => !x.Type.Equals(relationResourceTypeName)))
                                 throw new JsonApiFormatException(CausedBy.Client, $"Not all relations specified for {relation.Key} are of the type {relationResourceTypeName}");
                             var relationIds = relationData.Select(x => x.Id);
-                            changes.AddChange(resource => mapping.SetRelationValues(resource, relation.Key, relationIds));
+                            changes.AddChange(resource => mapping.SetRelationValue(resource, relation.Key, relationIds));
                         }
                     }
                     else
