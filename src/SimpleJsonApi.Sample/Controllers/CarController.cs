@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Description;
 using SimpleJsonApi.Sample.Models;
@@ -16,7 +17,7 @@ namespace SimpleJsonApi.Sample.Controllers
         [ResponseType(typeof(IEnumerable<Car>))]
         public IHttpActionResult GetCars()
         {
-            return Ok(Cars.Values);
+            return Ok(Cars.Select(x => x.Value));
         }
 
         [HttpGet]
