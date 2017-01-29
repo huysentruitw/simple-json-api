@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace SimpleJsonApi.Models
@@ -9,8 +10,8 @@ namespace SimpleJsonApi.Models
 
         public string Type { get; set; }
 
-        public JObject Attributes { get; set; }
+        public IDictionary<string, object> Attributes { get; set; }
 
-        public Relationships Relationships { get; set; }
+        public IDictionary<string, Relationship> Relationships { get; set; }
     }
 }

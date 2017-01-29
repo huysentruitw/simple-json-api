@@ -90,10 +90,8 @@
     <Compile Include="IChanges.cs" />
     <Compile Include="Models\Document.cs" />
     <Compile Include="Models\DocumentData.cs" />
-    <Compile Include="Models\ManyRelation.cs" />
     <Compile Include="Models\RelationData.cs" />
-    <Compile Include="Models\Relationships.cs" />
-    <Compile Include="Models\SingleRelation.cs" />
+    <Compile Include="Models\Relationship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Changes.cs" />
     <Compile Include="DocumentConverters\IDocumentBuilder.cs" />
