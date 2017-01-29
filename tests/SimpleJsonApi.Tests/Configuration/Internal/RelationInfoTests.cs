@@ -21,7 +21,7 @@ namespace SimpleJsonApi.Tests.Configuration.Internal
 
         private class Resource
         {
-            public int Age { get; set; }
+            public int Age { get; } = 35;
         }
     }
 }

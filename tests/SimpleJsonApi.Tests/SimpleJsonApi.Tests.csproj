@@ -72,6 +72,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\Internal\IdPropertyInfoTests.cs" />
+    <Compile Include="Configuration\Internal\ResourceConfigurationsTests.cs" />
+    <Compile Include="Configuration\Internal\ResourceConfigurationTests.cs" />
+    <Compile Include="Configuration\Internal\ResourceMappingTests.cs" />
     <Compile Include="Configuration\JsonApiConfigurationTests.cs" />
     <Compile Include="Attributes\JsonApiResourceNameAttributeTests.cs" />
     <Compile Include="Configuration\Internal\RelationInfoTests.cs" />

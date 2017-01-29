@@ -30,7 +30,7 @@ namespace SimpleJsonApi.Configuration.Internal
 
         public void SetAttributeValue(object instance, string name, object value) => GetAttributeInfo(name)?.SetValue(instance, value);
 
-        public object GetAttributeValue(object instance, string name) => GetAttributeInfo(name).GetValue(instance);
+        public object GetAttributeValue(object instance, string name) => GetAttributeInfo(name)?.GetValue(instance);
 
         public IEnumerable<string> GetRelationNames() => _relationProperties.Keys;
 
