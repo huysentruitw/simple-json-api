@@ -13,20 +13,12 @@ namespace SimpleJsonApi.Models
 
         public Relationship(string typeName, Guid id)
         {
-            Data = new RelationData
-            {
-                Id = id,
-                Type = typeName
-            };
+            Data = new RelationData { Id = id, Type = typeName };
         }
 
         public Relationship(string typeName, IEnumerable<Guid> ids)
         {
-            Data = ids.Select(x => new RelationData
-            {
-                Id = x,
-                Type = typeName
-            });
+            Data = ids.Select(x => new RelationData { Id = x, Type = typeName });
         }
 
         /// <summary>
