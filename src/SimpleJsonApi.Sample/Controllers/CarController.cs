@@ -16,7 +16,7 @@ namespace SimpleJsonApi.Sample.Controllers
         [ResponseType(typeof(IEnumerable<Car>))]
         public IHttpActionResult GetCars()
         {
-            return Ok(Cars);
+            return Ok(Cars.Values);
         }
 
         [HttpGet]

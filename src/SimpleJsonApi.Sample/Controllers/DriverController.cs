@@ -16,7 +16,7 @@ namespace SimpleJsonApi.Sample.Controllers
         [ResponseType(typeof(IEnumerable<Driver>))]
         public IHttpActionResult GetDrivers()
         {
-            return Ok(Drivers);
+            return Ok(Drivers.Values);
         }
 
         [HttpGet]
