@@ -124,17 +124,17 @@ Send a POST request with this raw JSON data with Content-Type header 'applicatio
 
 ```json
 {
-	data: {
-		type: 'drivers',
-		attributes: {
-			name: 'John Doe',
-			licensed: true
+	"data": {
+		"type": "drivers",
+		"attributes": {
+			"name": "John Doe",
+			"licensed": true
 		},
-		relationships: {
-			car: {
-				data: {
-					type: 'cars',
-					id: '8bf9f9f8-12e9-4b00-8a99-bea1e1701ce5'
+		"relationships": {
+			"car": {
+				"data": {
+					"type": "cars",
+					"id": "8bf9f9f8-12e9-4b00-8a99-bea1e1701ce5"
 				}
 			}
 		}
