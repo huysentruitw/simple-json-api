@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
+using SimpleJsonApi.Extensions;
 using SimpleJsonApi.Models;
 
 namespace SimpleJsonApi.DocumentConverters
@@ -11,11 +14,13 @@ namespace SimpleJsonApi.DocumentConverters
     internal sealed class DocumentParser : IDocumentParser
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
-        private readonly IResourceConfigurations _resourceConfigurations;
+        private readonly JsonApiConfiguration _configuration;
+        private readonly JsonSerializer _jsonSerializer;
 
-        public DocumentParser(IResourceConfigurations resourceConfigurations)
+        public DocumentParser(JsonApiConfiguration configuration)
         {
-            _resourceConfigurations = resourceConfigurations;
+            _configuration = configuration;
+            _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
         }
 
         public object ParseDocument(Document document, Type type)
@@ -27,7 +32,7 @@ namespace SimpleJsonApi.DocumentConverters
             if (isGenericChangesObject) type = type.GenericTypeArguments.First();
 
             ValidateResourceType(document, type);
-            var mapping = _resourceConfigurations[type]?.Mapping;
+            var mapping = _configuration.ResourceConfigurations[type]?.Mapping;
             if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
@@ -60,20 +65,21 @@ namespace SimpleJsonApi.DocumentConverters
                 {
                     var attributeType = mapping.GetAttributeType(attribute.Key);
                     if (attributeType == null) continue;
-                    changes.AddChange(resource => mapping.SetAttributeValue(resource, attribute.Key, attribute.Value.ToObject(attributeType)));
+                    var value = attribute.Value.ParseAs(attributeType, _jsonSerializer);
+                    changes.AddChange(resource => mapping.SetAttributeValue(resource, attribute.Key, value));
                 }
             }
 
-            if (document.Data.Relationships?.Items != null)
+            if (document.Data.Relationships != null)
             {
-                foreach (var relation in document.Data.Relationships.Items)
+                foreach (var relation in document.Data.Relationships)
                 {
                     var relationResourceType = mapping.GetResourceTypeOfRelation(relation.Key);
                     if (relationResourceType == null) throw new JsonApiException(CausedBy.Client, $"Unknown relation {relation.Key}");
                     var relationResourceTypeName = GetResourceTypeName(relationResourceType);
                     if (mapping.IsHasManyRelation(relation.Key))
                     {
-                        var relationData = relation.Value.ToObject<ManyRelation>()?.Data;
+                        var relationData = relation.Value.Data.ParseAs<IEnumerable<RelationData>>(_jsonSerializer);
                         if (relationData != null)
                         {
                             if (relationData.Any(x => !x.Type.Equals(relationResourceTypeName)))
@@ -84,7 +90,7 @@ namespace SimpleJsonApi.DocumentConverters
                     }
                     else
                     {
-                        var relationData = relation.Value.ToObject<SingleRelation>()?.Data;
+                        var relationData = relation.Value.Data.ParseAs<RelationData>(_jsonSerializer);
                         if (relationData != null)
                         {
                             if (!relationData.Type.Equals(relationResourceTypeName))
@@ -99,7 +105,7 @@ namespace SimpleJsonApi.DocumentConverters
             return changes;
         }
 
-        private string GetResourceTypeName(Type type) => _resourceConfigurations[type]?.TypeName;
+        private string GetResourceTypeName(Type type) => _configuration.ResourceConfigurations[type]?.TypeName;
 
         private void ValidateResourceType(Document document, Type type)
         {

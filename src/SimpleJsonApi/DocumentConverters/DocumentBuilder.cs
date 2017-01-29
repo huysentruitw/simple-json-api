@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web.Http;
+using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
 using SimpleJsonApi.Extensions;
@@ -10,11 +11,13 @@ namespace SimpleJsonApi.DocumentConverters
 {
     internal sealed class DocumentBuilder : IDocumentBuilder
     {
-        private readonly IResourceConfigurations _resourceConfigurations;
+        private readonly JsonApiConfiguration _configuration;
+        private readonly JsonSerializer _jsonSerializer;
 
-        public DocumentBuilder(IResourceConfigurations resourceConfigurations)
+        public DocumentBuilder(JsonApiConfiguration configuration)
         {
-            _resourceConfigurations = resourceConfigurations;
+            _configuration = configuration;
+            _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
         }
 
         public Document BuildDocument(object instance, Type type, Uri requestUri)
@@ -22,8 +25,8 @@ namespace SimpleJsonApi.DocumentConverters
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);
 
-            var mapping = _resourceConfigurations[type];
-            if (mapping == null) throw new JsonApiException(CausedBy.Server, $"No mapping found for resource type {type.Name}");
+            var resourceConfiguration = _configuration.ResourceConfigurations[type];
+            if (resourceConfiguration == null) throw new JsonApiException(CausedBy.Server, $"No configuration found for resource type {type.Name}");
 
             var document = new Document
             {

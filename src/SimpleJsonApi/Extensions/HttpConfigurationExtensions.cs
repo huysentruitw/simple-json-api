@@ -27,8 +27,8 @@ namespace System.Web.Http
             httpConfiguration.MessageHandlers.Add(new JsonApiDelegatingHandler(jsonApiConfiguration));
 
             httpConfiguration.Formatters.Add(new JsonApiMediaTypeFormatter(jsonApiConfiguration,
-                () => new DocumentParser(jsonApiConfiguration.ResourceConfigurations),
-                () => new DocumentBuilder(jsonApiConfiguration.ResourceConfigurations)));
+                () => new DocumentParser(jsonApiConfiguration),
+                () => new DocumentBuilder(jsonApiConfiguration)));
 
             return httpConfiguration;
         }
