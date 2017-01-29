@@ -2,6 +2,9 @@
 
 namespace SimpleJsonApi.Configuration
 {
+    /// <summary>
+    /// List of <see cref="IResourceConfiguration"/> items.
+    /// </summary>
     public interface IResourceConfigurations
     {
         /// <summary>

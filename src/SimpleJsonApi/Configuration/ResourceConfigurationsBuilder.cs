@@ -31,9 +31,9 @@ namespace SimpleJsonApi.Configuration
         }
 
         /// <summary>
-        /// Registers a resource type and returns a builder for further configuring the resource.
-        /// This overload will guess the JSON API resource type name by using the pluralized form of the <see cref="TResource"/> type name or
-        /// the name passed to the <see cref="JsonApiResourceNameAttribute"/> if defined on the resource type.
+        /// Registers a resource type and returns a builder for further configuring the resource.<br />
+        /// This overload will guess the JSON API resource type name by using the pluralized form of the resource type name
+        /// or the name passed to the <see cref="JsonApiResourceNameAttribute"/> if defined on the resource type.
         /// </summary>
         /// <typeparam name="TResource">The resource type.</typeparam>
         /// <returns></returns>
