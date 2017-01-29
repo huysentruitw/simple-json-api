@@ -1,5 +1,7 @@
 # SimpleJsonApi
 
+[![Build status](https://ci.appveyor.com/api/projects/status/4q1chjxv30acjbt8/branch/master?svg=true)](https://ci.appveyor.com/project/huysentruitw/simple-json-api/branch/master)
+
 ## Description
 
 Simple JSON API server implementation for ASP.NET Web API 2. Based on the [JSON API 1.0 specification](http://jsonapi.org/format/).
@@ -13,11 +15,15 @@ Simple JSON API server implementation for ASP.NET Web API 2. Based on the [JSON 
 For requesting one or more resources, the GET request must include an Accept header with the value 'application/vnd.api+json'.
 For posting/putting/patching/deleting resource, the POST/PUT/PATCH/DELETE request must include a Content-Type header with the value 'application/vnd.api+json'.
 
+## Get it on NuGet
+
+    Install-Package SimpleJsonApi
+
 ## Usage example
 
 ### Model definitions
 
-```cs
+```C#
 public class Car
 {
     public Guid Id { get; set; }
@@ -37,7 +43,7 @@ public class Driver
 
 ### Configuration
 
-```cs
+```C#
 public class Startup
 {
     public void Configuration(IAppBuilder app)
@@ -66,7 +72,7 @@ public class Startup
 
 ### Controller
 
-```cs
+```C#
 [RoutePrefix("api/drivers")]
 public class DriverController : ApiController
 {
@@ -148,26 +154,26 @@ Send a GET request with Accept header 'application/vnd.api+json' to '/api/driver
 
 ```json
 {
-  "links": {
-    "self": "http://localhost:56373/api/drivers"
-  },
-  "data": [
-    {
-      "id": "d385f819-237c-4cdf-a198-76b17d5a4a01",
-      "type": "drivers",
-      "attributes": {
-        "name": "John Doe",
-        "licensed": true
-      },
-      "relationships": {
-        "car": {
-          "data": {
-            "type": "cars",
-            "id": "8bf9f9f8-12e9-4b00-8a99-bea1e1701ce5"
-          }
-        }
-      }
-    }
-  ]
+	"links": {
+		"self": "http://localhost:56373/api/drivers"
+	},
+	"data": [
+		{
+			"id": "d385f819-237c-4cdf-a198-76b17d5a4a01",
+			"type": "drivers",
+			"attributes": {
+				"name": "John Doe",
+				"licensed": true
+			},
+			"relationships": {
+				"car": {
+					"data": {
+						"type": "cars",
+						"id": "8bf9f9f8-12e9-4b00-8a99-bea1e1701ce5"
+					}
+				}
+			}
+		}
+	]
 }
 ```
