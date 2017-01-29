@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SimpleJsonApi")]
 [assembly: AssemblyDescription("Simple JSON API server implementation for ASP.NET Web API 2")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Copyright by Wouter Huysentruit")]
+[assembly: AssemblyCompany("Huysentruit")]
 [assembly: AssemblyProduct("SimpleJsonApi")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyCopyright("Copyright ©  2017 Wouter Huysentruit")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

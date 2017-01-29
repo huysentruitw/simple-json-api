@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://raw.githubusercontent.com/huysentruitw/simple-json-api/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/huysentruitw/simple-json-api</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/huysentruitw/simple-json-api/master/icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Simple JSON API server implementation for ASP.NET Web API 2. Based on the JSON API 1.0 specification</description>
+    <copyright>Copyright 2017 Wouter Huysentruit</copyright>
+  </metadata>
+</package>
