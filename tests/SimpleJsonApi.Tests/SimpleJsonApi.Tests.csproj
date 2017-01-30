@@ -80,6 +80,7 @@
     <Compile Include="Attributes\JsonApiResourceNameAttributeTests.cs" />
     <Compile Include="Configuration\Internal\RelationInfoTests.cs" />
     <Compile Include="ChangesTests.cs" />
+    <Compile Include="Configuration\ResourceConfigurationBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

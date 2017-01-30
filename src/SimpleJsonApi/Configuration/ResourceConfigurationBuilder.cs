@@ -48,7 +48,7 @@ namespace SimpleJsonApi.Configuration
         public ResourceConfigurationBuilder<TResource> WithIdProperty(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfoOrThrow();
-            if (propertyInfo.IsValidIdType()) throw new ArgumentException($"The id property must be of type Guid", nameof(expression));
+            if (!propertyInfo.IsValidIdType()) throw new ArgumentException($"The id property must be of type Guid", nameof(expression));
             _idPropertyName = propertyInfo.Name;
             return this;
         }
@@ -107,6 +107,8 @@ namespace SimpleJsonApi.Configuration
         public ResourceConfigurationBuilder<TResource> BelongsTo<TRelatedResource>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfoOrThrow();
+            if (propertyInfo.PropertyType != typeof(Guid) && propertyInfo.PropertyType != typeof(TResource))
+                throw new ArgumentException($"Property must be of type Guid or {typeof(TResource).Name}", nameof(expression));
             MapRelation(propertyInfo, typeof(TRelatedResource), RelationKind.BelongsTo);
             return this;
         }
@@ -120,6 +122,8 @@ namespace SimpleJsonApi.Configuration
         public ResourceConfigurationBuilder<TResource> HasMany<TRelatedResource>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfoOrThrow();
+            if (propertyInfo.PropertyType != typeof(IEnumerable<Guid>) && propertyInfo.PropertyType != typeof(IEnumerable<TResource>))
+                throw new ArgumentException($"Property must be of type IEnumerable<Guid> or IEnumerable<{typeof(TResource).Name}>", nameof(expression));
             MapRelation(propertyInfo, typeof(TRelatedResource), RelationKind.HasMany);
             return this;
         }
