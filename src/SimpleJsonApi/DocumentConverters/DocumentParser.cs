@@ -14,13 +14,13 @@ namespace SimpleJsonApi.DocumentConverters
     internal sealed class DocumentParser : IDocumentParser
     {
         private static readonly ConcurrentDictionary<Type, MethodInfo> BuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
-        private readonly JsonApiConfiguration _configuration;
+        private readonly IResourceConfigurations _resourceConfigurations;
         private readonly JsonSerializer _jsonSerializer;
 
-        public DocumentParser(JsonApiConfiguration configuration)
+        public DocumentParser(IResourceConfigurations resourceConfigurations, JsonSerializer jsonSerializer)
         {
-            _configuration = configuration;
-            _jsonSerializer = JsonSerializer.Create(configuration.SerializerSettings);
+            _resourceConfigurations = resourceConfigurations;
+            _jsonSerializer = jsonSerializer;
         }
 
         public object ParseDocument(Document document, Type type)
@@ -35,7 +35,7 @@ namespace SimpleJsonApi.DocumentConverters
             if (documentData == null) throw new JsonApiException(CausedBy.Client, $"Document data not found or invalid");
 
             ValidateResourceType(documentData, type);
-            var mapping = _configuration.ResourceConfigurations[type]?.Mapping;
+            var mapping = _resourceConfigurations[type]?.Mapping;
             if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
             var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
@@ -107,7 +107,7 @@ namespace SimpleJsonApi.DocumentConverters
             return changes;
         }
 
-        private string GetResourceTypeName(Type type) => _configuration.ResourceConfigurations[type]?.TypeName;
+        private string GetResourceTypeName(Type type) => _resourceConfigurations[type]?.TypeName;
 
         private void ValidateResourceType(DocumentData data, Type type)
         {

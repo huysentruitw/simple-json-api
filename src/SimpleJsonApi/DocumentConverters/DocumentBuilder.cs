@@ -12,11 +12,11 @@ namespace SimpleJsonApi.DocumentConverters
 {
     internal sealed class DocumentBuilder : IDocumentBuilder
     {
-        private readonly JsonApiConfiguration _configuration;
+        private readonly IResourceConfigurations _resourceConfigurations;
 
-        public DocumentBuilder(JsonApiConfiguration configuration)
+        public DocumentBuilder(IResourceConfigurations resourceConfigurations)
         {
-            _configuration = configuration;
+            _resourceConfigurations = resourceConfigurations;
         }
 
         public Document BuildDocument(object instance, Type type, Uri requestUri)
@@ -49,7 +49,7 @@ namespace SimpleJsonApi.DocumentConverters
         private DocumentData GenerateSingleDataObject(object instance)
         {
             var resourceType = instance.GetType();
-            var resourceConfiguration = _configuration.ResourceConfigurations[resourceType];
+            var resourceConfiguration = _resourceConfigurations[resourceType];
             if (resourceConfiguration == null)
                 throw new JsonApiException(CausedBy.Server, $"No configuration found for resource type {resourceType.Name}");
 
@@ -86,7 +86,7 @@ namespace SimpleJsonApi.DocumentConverters
             var relationships = new Dictionary<string, Relationship>();
             foreach (var relationName in relationNames)
             {
-                var relationTypeName = _configuration.ResourceConfigurations[mapping.GetResourceTypeOfRelation(relationName)]?.TypeName;
+                var relationTypeName = _resourceConfigurations[mapping.GetResourceTypeOfRelation(relationName)]?.TypeName;
                 if (relationTypeName == null) throw new JsonApiException(CausedBy.Server, $"Resource type for relation {relationName} is not configured");
 
                 var value = mapping.GetRelationValue(instance, relationName);
