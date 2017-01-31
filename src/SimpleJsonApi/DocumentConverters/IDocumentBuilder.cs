@@ -5,6 +5,6 @@ namespace SimpleJsonApi.DocumentConverters
 {
     internal interface IDocumentBuilder
     {
-        Document BuildDocument(object instance, Type type, Uri requestUri);
+        Document BuildDocument(object instance, Uri requestUri);
     }
 }

@@ -19,7 +19,7 @@ namespace SimpleJsonApi.DocumentConverters
             _resourceConfigurations = resourceConfigurations;
         }
 
-        public Document BuildDocument(object instance, Type type, Uri requestUri)
+        public Document BuildDocument(object instance, Uri requestUri)
         {
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);
