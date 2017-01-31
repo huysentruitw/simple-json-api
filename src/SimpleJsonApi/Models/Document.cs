@@ -16,5 +16,8 @@ namespace SimpleJsonApi.Models
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IEnumerable<Error> Errors { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public IEnumerable<DocumentData> Included { get; set; }
     }
 }
