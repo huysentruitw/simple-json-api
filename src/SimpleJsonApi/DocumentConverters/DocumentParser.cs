@@ -38,7 +38,7 @@ namespace SimpleJsonApi.DocumentConverters
             var mapping = _resourceConfigurations[type]?.Mapping;
             if (mapping == null) throw new JsonApiException(CausedBy.Client, $"No mapping found for resource type {type.Name}");
 
-            var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges))?.MakeGenericMethod(t));
+            var builder = BuilderCache.GetOrAdd(type, t => typeof(DocumentParser).GetMethod(nameof(BuildChanges), BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(t));
             if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create builder method for type {type.Name}");
 
             var changes = builder.Invoke(this, new object[] { documentData, mapping }) as IChanges;
@@ -51,8 +51,7 @@ namespace SimpleJsonApi.DocumentConverters
             return result;
         }
 
-        [Obsolete("Only used by reflection inside Deserialize method", true)]
-        public Changes<TResource> BuildChanges<TResource>(DocumentData data, IResourceMapping mapping)
+        private Changes<TResource> BuildChanges<TResource>(DocumentData data, IResourceMapping mapping)
         {
             var changes = new Changes<TResource>();
 
