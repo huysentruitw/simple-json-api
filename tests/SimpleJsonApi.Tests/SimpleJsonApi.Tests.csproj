@@ -90,6 +90,7 @@
     <Compile Include="ChangesTests.cs" />
     <Compile Include="Configuration\ResourceConfigurationBuilderTests.cs" />
     <Compile Include="Configuration\ResourceConfigurationsBuilderTests.cs" />
+    <Compile Include="Extensions\TypeExtensionsTests.cs" />
     <Compile Include="Http\JsonApiMediaTypeFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
