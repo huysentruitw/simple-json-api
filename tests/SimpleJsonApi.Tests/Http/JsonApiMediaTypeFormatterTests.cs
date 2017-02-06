@@ -124,7 +124,7 @@ namespace SimpleJsonApi.Tests.Http
 
             formatter.WriteToStreamAsync(typeof(TestResource), resource, stream, null, null).Wait();
 
-            _builderMock.Verify(x => x.BuildDocument(resource, requestUri), Times.Once);
+            _builderMock.Verify(x => x.BuildDocument(resource, It.Is<HttpRequestMessage>(y => y.RequestUri == requestUri)), Times.Once);
         }
 
         private class TestResource

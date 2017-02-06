@@ -6,7 +6,7 @@ namespace SimpleJsonApi.Models
     internal sealed class Document
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public IDictionary<string, string> Links { get; set; }
+        public IDictionary<string, object> Links { get; set; }
 
         /// <summary>
         /// Data is either a <see cref="DocumentData"/> or <see cref="IEnumerable{DocumentData}"/> instance.

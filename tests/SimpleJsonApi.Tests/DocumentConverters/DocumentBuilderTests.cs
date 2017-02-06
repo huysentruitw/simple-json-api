@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.DocumentConverters;
+using SimpleJsonApi.Extensions;
 using SimpleJsonApi.Models;
 
 namespace SimpleJsonApi.Tests.DocumentConverters
@@ -37,7 +39,7 @@ namespace SimpleJsonApi.Tests.DocumentConverters
                 IsActive = true
             };
             var requestUri = new Uri($"https://localhost/api/users/{user.Id}");
-            var document = _documentBuilder.BuildDocument(user, requestUri);
+            var document = _documentBuilder.BuildDocument(user, new HttpRequestMessage(HttpMethod.Get, requestUri));
 
             Assert.That(document.Errors, Is.Null);
             Assert.That(document.Links["Self"], Is.EqualTo(requestUri));
@@ -59,7 +61,7 @@ namespace SimpleJsonApi.Tests.DocumentConverters
                 UserId = Guid.NewGuid()
             };
             var requestUri = new Uri($"https://localhost/api/userinfos/{userInfo.Id}");
-            var document = _documentBuilder.BuildDocument(userInfo, requestUri);
+            var document = _documentBuilder.BuildDocument(userInfo, new HttpRequestMessage(HttpMethod.Get, requestUri));
 
             Assert.That(document.Errors, Is.Null);
             Assert.That(document.Links["Self"], Is.EqualTo(requestUri));
@@ -83,7 +85,7 @@ namespace SimpleJsonApi.Tests.DocumentConverters
                 Users = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() }
             };
             var requestUri = new Uri($"https://localhost/api/groups/{group.Id}");
-            var document = _documentBuilder.BuildDocument(group, requestUri);
+            var document = _documentBuilder.BuildDocument(group, new HttpRequestMessage(HttpMethod.Get, requestUri));
 
             Assert.That(document.Errors, Is.Null);
             Assert.That(document.Links["Self"], Is.EqualTo(requestUri));
@@ -113,7 +115,7 @@ namespace SimpleJsonApi.Tests.DocumentConverters
                 }
             };
             var requestUri = new Uri($"https://localhost/api/populations/{population.Id}");
-            var document = _documentBuilder.BuildDocument(population, requestUri);
+            var document = _documentBuilder.BuildDocument(population, new HttpRequestMessage(HttpMethod.Get, requestUri));
 
             Assert.That(document.Errors, Is.Null);
             Assert.That(document.Links["Self"], Is.EqualTo(requestUri));
@@ -128,7 +130,71 @@ namespace SimpleJsonApi.Tests.DocumentConverters
                 Assert.True(population.Groups.Any(x => x.Id == relation.Id));
             }
 
-            // TODO test included data
+            var included = document.Included.ToList();
+            Assert.That(included.Count, Is.EqualTo(2));
+            Assert.That(included[0].Type, Is.EqualTo("groups"));
+            Assert.That(included[1].Type, Is.EqualTo("groups"));
+            Assert.That(included[0].Id, Is.EqualTo(population.Groups.First().Id));
+            Assert.That(included[1].Id, Is.EqualTo(population.Groups.Last().Id));
+            Assert.That(included[0].Attributes["Name"], Is.EqualTo("GroupA"));
+            Assert.That(included[1].Attributes["Name"], Is.EqualTo("GroupB"));
+
+            var userRelations = (included[0].Relationships["Users"].Data as IEnumerable<RelationData>).ToList();
+            Assert.That(userRelations.Count, Is.EqualTo(2));
+            Assert.That(userRelations[0].Type, Is.EqualTo("users"));
+            Assert.That(userRelations[0].Id, Is.EqualTo(population.Groups.First().Users.First()));
+            Assert.That(userRelations[1].Type, Is.EqualTo("users"));
+            Assert.That(userRelations[1].Id, Is.EqualTo(population.Groups.First().Users.Last()));
+
+            userRelations = (included[1].Relationships["Users"].Data as IEnumerable<RelationData>).ToList();
+            Assert.That(userRelations.Count, Is.EqualTo(1));
+            Assert.That(userRelations[0].Type, Is.EqualTo("users"));
+            Assert.That(userRelations[0].Id, Is.EqualTo(population.Groups.Last().Users.First()));
+        }
+
+        [Test]
+        public void Build_AdditionalResourceLinkWithoutMetadata_ShouldIncludeAdditionalResourceLink()
+        {
+            var user = new User { Id = Guid.NewGuid() };
+            var requestUri = new Uri($"https://localhost/api/users/{user.Id}");
+            var activateUserUri = new Uri($"https://localhost/api/users/{user.Id}/activate");
+            var deleteUserUri = new Uri($"https://localhost/api/users/{user.Id}/delete");
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+            request.AddResourceLink("ActivateUser", activateUserUri);
+            request.AddResourceLink("DeleteUser", deleteUserUri);
+
+            var document = _documentBuilder.BuildDocument(user, request);
+            var links = document.Links;
+            Assert.That(links.Count, Is.EqualTo(3));
+            Assert.True(links.Any(x => x.Key == "Self" && x.Value.Equals(requestUri.AbsoluteUri)));
+            Assert.True(links.Any(x => x.Key == "ActivateUser" && x.Value.Equals(activateUserUri.AbsoluteUri)));
+            Assert.True(links.Any(x => x.Key == "DeleteUser" && x.Value.Equals(deleteUserUri.AbsoluteUri)));
+        }
+
+        [Test]
+        public void Build_AdditionalResourceLinkWithMetadata_ShouldIncludeAdditionalResourceLink()
+        {
+            var user = new User { Id = Guid.NewGuid() };
+            var requestUri = new Uri($"https://localhost/api/users/{user.Id}");
+            var activateUserUri = new Uri($"https://localhost/api/users/{user.Id}/activate");
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+            request.AddResourceLink("ActivateUser", activateUserUri, new
+            {
+                Method = "POST",
+                Abc = "123"
+            });
+
+            var document = _documentBuilder.BuildDocument(user, request);
+            var links = document.Links;
+            Assert.That(links.Count, Is.EqualTo(2));
+            Assert.True(links.Any(x => x.Key == "Self" && x.Value.Equals(requestUri.AbsoluteUri)));
+            var link = links.First(x => x.Key.Equals("ActivateUser")).Value as LinkData;
+            Assert.That(link.Href, Is.EqualTo(activateUserUri.AbsoluteUri));
+            Assert.That(link.Meta, Is.Not.Null);
+            Assert.That(((dynamic)link.Meta).Method, Is.EqualTo("POST"));
+            Assert.That(((dynamic)link.Meta).Abc, Is.EqualTo("123"));
         }
 
         #region Test models
