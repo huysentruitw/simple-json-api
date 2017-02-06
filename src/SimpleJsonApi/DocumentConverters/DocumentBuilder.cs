@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
 using SimpleJsonApi.Configuration;
@@ -22,28 +23,41 @@ namespace SimpleJsonApi.DocumentConverters
             _resourceConfigurations = resourceConfigurations;
         }
 
-        public Document BuildDocument(object instance, Uri requestUri)
+        public Document BuildDocument(object instance, HttpRequestMessage request)
         {
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);
 
-            var baseUri = requestUri.GetAbsoluteBaseUri();
             var includes = new HashSet<DocumentData>();
 
             return new Document
             {
-                Links = BuildLinks(requestUri),
+                Links = BuildLinks(request.RequestUri, request.GetResourceLinksSet()),
                 Data = BuildData(instance, includes),
                 Included = includes.Any() ? includes : null
             };
         }
 
-        private IDictionary<string, string> BuildLinks(Uri requestUri)
+        private IDictionary<string, object> BuildLinks(Uri requestUri, ISet<ResourceLink> resourceLinks)
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, object>
             {
                 { "Self", requestUri.AbsoluteUri }
             };
+
+            var baseUri = requestUri.GetAbsoluteBaseUri();
+            foreach (var resourceLink in resourceLinks)
+                result.Add(resourceLink.Name, BuildLinkData(resourceLink, baseUri));
+
+            return result;
+        }
+
+        private object BuildLinkData(ResourceLink link, Uri baseUri)
+        {
+            var uri = (link.Uri.IsAbsoluteUri ? link.Uri : new Uri(baseUri, link.Uri)).AbsoluteUri;
+            return link.Metadata != null
+                ? new LinkData {Href = uri, Meta = link.Metadata}
+                : (object)uri;
         }
 
         private object BuildData(object instance, ISet<DocumentData> includes)
