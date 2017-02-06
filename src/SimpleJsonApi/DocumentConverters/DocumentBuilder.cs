@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Web.Http;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.Exceptions;
@@ -12,44 +15,60 @@ namespace SimpleJsonApi.DocumentConverters
 {
     internal sealed class DocumentBuilder : IDocumentBuilder
     {
-        private readonly JsonApiConfiguration _configuration;
+        private static readonly ConcurrentDictionary<Type, MethodInfo> RelationshipBuilderCache = new ConcurrentDictionary<Type, MethodInfo>();
+        private readonly IResourceConfigurations _resourceConfigurations;
 
-        public DocumentBuilder(JsonApiConfiguration configuration)
+        public DocumentBuilder(IResourceConfigurations resourceConfigurations)
         {
-            _configuration = configuration;
+            _resourceConfigurations = resourceConfigurations;
         }
 
-        public Document BuildDocument(object instance, Type type, Uri requestUri)
+        public Document BuildDocument(object instance, HttpRequestMessage request)
         {
             var httpError = instance as HttpError;
             if (httpError != null) return SerializeHttpError(httpError);
 
-            var baseUri = requestUri.GetAbsoluteBaseUri();
+            var includes = new HashSet<DocumentData>();
 
             return new Document
             {
-                Links = GenerateLinks(requestUri),
-                Data = GenerateDataObject(instance)
+                Links = BuildLinks(request.RequestUri, request.GetResourceLinksSet()),
+                Data = BuildData(instance, includes),
+                Included = includes.Any() ? includes : null
             };
         }
 
-        private IDictionary<string, string> GenerateLinks(Uri requestUri)
+        private IDictionary<string, object> BuildLinks(Uri requestUri, ISet<ResourceLink> resourceLinks)
         {
-            return new Dictionary<string, string>
+            var result = new Dictionary<string, object>
             {
                 { "Self", requestUri.AbsoluteUri }
             };
+
+            var baseUri = requestUri.GetAbsoluteBaseUri();
+            foreach (var resourceLink in resourceLinks)
+                result.Add(resourceLink.Name, BuildLinkData(resourceLink, baseUri));
+
+            return result;
         }
 
-        private object GenerateDataObject(object instance)
-            => instance is IEnumerable
-                    ? from object resource in (IEnumerable) instance select GenerateSingleDataObject(resource)
-                    : (object)GenerateSingleDataObject(instance);
+        private object BuildLinkData(ResourceLink link, Uri baseUri)
+        {
+            var uri = (link.Uri.IsAbsoluteUri ? link.Uri : new Uri(baseUri, link.Uri)).AbsoluteUri;
+            return link.Metadata != null
+                ? new LinkData {Href = uri, Meta = link.Metadata}
+                : (object)uri;
+        }
 
-        private DocumentData GenerateSingleDataObject(object instance)
+        private object BuildData(object instance, ISet<DocumentData> includes)
+            => instance is IEnumerable
+                    ? from object resource in (IEnumerable) instance select BuildSingleDataObject(resource, includes)
+                    : (object)BuildSingleDataObject(instance, includes);
+
+        private DocumentData BuildSingleDataObject(object instance, ISet<DocumentData> includes)
         {
             var resourceType = instance.GetType();
-            var resourceConfiguration = _configuration.ResourceConfigurations[resourceType];
+            var resourceConfiguration = _resourceConfigurations[resourceType];
             if (resourceConfiguration == null)
                 throw new JsonApiException(CausedBy.Server, $"No configuration found for resource type {resourceType.Name}");
 
@@ -58,12 +77,12 @@ namespace SimpleJsonApi.DocumentConverters
             {
                 Id = mapping.GetId(instance),
                 Type = resourceConfiguration.TypeName,
-                Attributes = GenerateAttributes(instance, mapping),
-                Relationships = GenerateRelationships(instance, mapping)
+                Attributes = BuildAttributes(instance, mapping),
+                Relationships = BuildRelationships(instance, mapping, includes)
             };
         }
 
-        private IDictionary<string, object> GenerateAttributes(object instance, IResourceMapping mapping)
+        private IDictionary<string, object> BuildAttributes(object instance, IResourceMapping mapping)
         {
             var attributeNames = mapping.GetAttributeNames().ToList();
             if (!attributeNames.Any()) return null;
@@ -78,7 +97,7 @@ namespace SimpleJsonApi.DocumentConverters
             return attributes;
         }
 
-        private IDictionary<string, Relationship> GenerateRelationships(object instance, IResourceMapping mapping)
+        private IDictionary<string, Relationship> BuildRelationships(object instance, IResourceMapping mapping, ISet<DocumentData> includes)
         {
             var relationNames = mapping.GetRelationNames().ToList();
             if (!relationNames.Any()) return null;
@@ -86,23 +105,45 @@ namespace SimpleJsonApi.DocumentConverters
             var relationships = new Dictionary<string, Relationship>();
             foreach (var relationName in relationNames)
             {
-                var relationTypeName = _configuration.ResourceConfigurations[mapping.GetResourceTypeOfRelation(relationName)]?.TypeName;
-                if (relationTypeName == null) throw new JsonApiException(CausedBy.Server, $"Resource type for relation {relationName} is not configured");
+                var relationType = mapping.GetResourceTypeOfRelation(relationName);
+                if (relationType == null) throw new JsonApiException(CausedBy.Server, $"Resource type for relation {relationName} is not configured");
+                var relationTypeName = _resourceConfigurations[relationType]?.TypeName;
 
                 var value = mapping.GetRelationValue(instance, relationName);
-                if (value == null) return null;
+                if (value == null) continue;
 
-                if (value is Guid)
-                {
-                    relationships.Add(relationName, new Relationship(relationTypeName, (Guid)value));
-                }
-                else if (value is IEnumerable<Guid>)
-                {
-                    relationships.Add(relationName, new Relationship(relationTypeName, (IEnumerable<Guid>)value));
-                }
+                var builder = RelationshipBuilderCache.GetOrAdd(relationType,
+                    t => typeof(DocumentBuilder).GetMethod(nameof(BuildRelationship), BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(t));
+                if (builder == null) throw new JsonApiException(CausedBy.Server, $"Failed to create generic method for type {relationType.Name}");
+
+                var relationship = (Relationship)builder.Invoke(this, new[] { relationTypeName, value, includes });
+                if (relationship != null) relationships.Add(relationName, relationship);
             }
 
             return relationships;
+        }
+
+        private Relationship BuildRelationship<TRelatedResource>(string typeName, object value, ISet<DocumentData> includes)
+        {
+            if (value is Guid) return new Relationship(typeName, (Guid)value);
+            if (value is IEnumerable<Guid>) return new Relationship(typeName, (IEnumerable<Guid>)value);
+
+            var mapping = _resourceConfigurations[typeof(TRelatedResource)].Mapping;
+            if (value is TRelatedResource)
+            {
+                var documentData = BuildSingleDataObject(value, includes);
+                includes.Add(documentData);
+                return new Relationship(typeName, documentData.Id.Value);
+            }
+
+            if (value is IEnumerable<TRelatedResource>)
+            {
+                var documentDatas = ((IEnumerable<TRelatedResource>)value).Select(x => BuildSingleDataObject(x, includes));
+                foreach (var documentData in documentDatas) includes.Add(documentData);
+                return new Relationship(typeName, documentDatas.Select(x => x.Id.Value));
+            }
+
+            return null;
         }
 
         private static Document SerializeHttpError(HttpError httpError) => new Document { Errors = httpError.ToErrors() };

@@ -1,4 +1,5 @@
-﻿using SimpleJsonApi.Configuration;
+﻿using Newtonsoft.Json;
+using SimpleJsonApi.Configuration;
 using SimpleJsonApi.DocumentConverters;
 using SimpleJsonApi.Http;
 
@@ -26,9 +27,11 @@ namespace System.Web.Http
 
             httpConfiguration.MessageHandlers.Add(new JsonApiDelegatingHandler(jsonApiConfiguration));
 
+            var jsonSerializer = JsonSerializer.Create(jsonApiConfiguration.SerializerSettings);
+
             httpConfiguration.Formatters.Add(new JsonApiMediaTypeFormatter(jsonApiConfiguration,
-                () => new DocumentParser(jsonApiConfiguration),
-                () => new DocumentBuilder(jsonApiConfiguration)));
+                () => new DocumentParser(jsonApiConfiguration.ResourceConfigurations, jsonSerializer),
+                () => new DocumentBuilder(jsonApiConfiguration.ResourceConfigurations)));
 
             return httpConfiguration;
         }

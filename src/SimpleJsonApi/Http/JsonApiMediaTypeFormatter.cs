@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
@@ -10,6 +9,7 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using SimpleJsonApi.Configuration;
 using SimpleJsonApi.DocumentConverters;
+using SimpleJsonApi.Extensions;
 using SimpleJsonApi.Models;
 
 namespace SimpleJsonApi.Http
@@ -53,16 +53,14 @@ namespace SimpleJsonApi.Http
 
         public override bool CanReadType(Type type)
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Changes<>))
-                type = type.GetGenericArguments().First();
+            if (type.Implements(typeof(Changes<>))) type = type.GetFirstGenericArgument();
             return _configuration.ResourceConfigurations.Contains(type);
         }
 
         public override bool CanWriteType(Type type)
         {
             if (type == typeof(HttpError)) return true;
-            if (typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType)
-                type = type.GetGenericArguments().First();
+            if (type.Implements(typeof(IEnumerable<>))) type = type.GetFirstGenericArgument();
             return _configuration.ResourceConfigurations.Contains(type);
         }
 
@@ -81,7 +79,7 @@ namespace SimpleJsonApi.Http
             using (var streamWriter = new StreamWriter(writeStream))
             using (var jsonTextWriter = new JsonTextWriter(streamWriter))
             {
-                var document = _documentBuilderFunc().BuildDocument(value, type, _request.RequestUri);
+                var document = _documentBuilderFunc().BuildDocument(value, _request);
                 _jsonSerializer.Serialize(jsonTextWriter, document);
             }
         }

@@ -122,8 +122,8 @@ namespace SimpleJsonApi.Configuration
         public ResourceConfigurationBuilder<TResource> HasMany<TRelatedResource>(Expression<Func<TResource, object>> expression)
         {
             var propertyInfo = expression.GetPropertyInfoOrThrow();
-            if (propertyInfo.PropertyType != typeof(IEnumerable<Guid>) && propertyInfo.PropertyType != typeof(IEnumerable<TResource>))
-                throw new ArgumentException($"Property must be of type IEnumerable<Guid> or IEnumerable<{typeof(TResource).Name}>", nameof(expression));
+            if (propertyInfo.PropertyType != typeof(IEnumerable<Guid>) && propertyInfo.PropertyType != typeof(IEnumerable<TRelatedResource>))
+                throw new ArgumentException($"Property must be of type IEnumerable<Guid> or IEnumerable<{typeof(TRelatedResource).Name}>", nameof(expression));
             MapRelation(propertyInfo, typeof(TRelatedResource), RelationKind.HasMany);
             return this;
         }
