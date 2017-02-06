@@ -128,7 +128,26 @@ namespace SimpleJsonApi.Tests.DocumentConverters
                 Assert.True(population.Groups.Any(x => x.Id == relation.Id));
             }
 
-            // TODO test included data
+            var included = document.Included.ToList();
+            Assert.That(included.Count, Is.EqualTo(2));
+            Assert.That(included[0].Type, Is.EqualTo("groups"));
+            Assert.That(included[1].Type, Is.EqualTo("groups"));
+            Assert.That(included[0].Id, Is.EqualTo(population.Groups.First().Id));
+            Assert.That(included[1].Id, Is.EqualTo(population.Groups.Last().Id));
+            Assert.That(included[0].Attributes["Name"], Is.EqualTo("GroupA"));
+            Assert.That(included[1].Attributes["Name"], Is.EqualTo("GroupB"));
+
+            var userRelations = (included[0].Relationships["Users"].Data as IEnumerable<RelationData>).ToList();
+            Assert.That(userRelations.Count, Is.EqualTo(2));
+            Assert.That(userRelations[0].Type, Is.EqualTo("users"));
+            Assert.That(userRelations[0].Id, Is.EqualTo(population.Groups.First().Users.First()));
+            Assert.That(userRelations[1].Type, Is.EqualTo("users"));
+            Assert.That(userRelations[1].Id, Is.EqualTo(population.Groups.First().Users.Last()));
+
+            userRelations = (included[1].Relationships["Users"].Data as IEnumerable<RelationData>).ToList();
+            Assert.That(userRelations.Count, Is.EqualTo(1));
+            Assert.That(userRelations[0].Type, Is.EqualTo("users"));
+            Assert.That(userRelations[0].Id, Is.EqualTo(population.Groups.Last().Users.First()));
         }
 
         #region Test models
